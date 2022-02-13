@@ -1,0 +1,98 @@
+.navbar {
+    height: 50px;
+    background-color: #4CAF50;
+    border-style: hidden;
+    display: flex;
+    justify-content: space-between;
+    flex-direction: row-reverse;
+    align-items: center;
+    padding: 5px 10px 10px;
+    text-align: right;
+    width: auto;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    /* box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px; */
+    box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 3px, rgba(0, 0, 0, 0.24) 0px 1px 2px;
+  }
+  .iconButton {
+      color: black;
+  }
+  .navbar i {
+    font-size: calc(var(--navbar-height) * 0.8);
+  }
+  
+  .container-banner {
+    background-color: #ffffff;
+    text-align: center;
+    border-style: hidden;
+    border-radius: 15px;
+    font-family: "Roboto";
+  }
+  
+  .container-banner > p {
+    font-family: "Roboto";
+    font-size: 20px;
+    line-height: 23px;
+  }
+  
+  .bottom {
+    display: inline-block;
+  }
+  
+  .floated {
+    padding-left: 40px;
+    padding-right: 40px;
+  }
+  
+  form {
+    min-width: 600px;
+    width: calc(100px + 5vw);
+    min-height: 600px;
+    height: calc(100px + 5vw);
+    margin: 70px;
+    padding: 50px;
+    border-radius: 6px;
+    box-shadow: 4px 8px 13px 1px #01010a73;
+  }
+  
+  .form-inputs {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    margin-top: 70px;
+  }
+  
+  form p label {
+    font-size: 18px;
+    padding-left: 70px;
+    display: flex;
+  }
+  
+  form p input {
+    background: rgba(196, 196, 196, 0.15);
+    border: 1px solid #e5e5e5;
+    border-radius: 5px;
+    width: 250px;
+    height: 35px;
+    float: right;
+    margin-top: -30px;
+    margin-right: 50px;
+  }
+  
+  .form-wrapper {
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  #contactimg {
+    background-color: #ffffff;
+    border-radius: 100px;
+    border: 1px solid #97b9fd;
+    box-sizing: border-box;
+    margin-top: -80px;
+    padding: 10px;
+  }
+  
