@@ -2,6 +2,7 @@ import React from "react";
 import "./css/main.css";
 import { useNavigate } from "react-router";
 import { IconButton } from "@mui/material";
+import { Link } from "react-router-dom";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 
 const Header = () => {
@@ -9,9 +10,10 @@ const Header = () => {
 
   return (
     <nav className="navbar">
+     <Link to="/rules" style={{ paddingRight: 25, fontWeight: 'bold', textDecoration: 'none', color: "white"}} >Rules</Link>
       <IconButton
         className="iconButton"
-        onClick={() => navigate("/login")}
+        onClick={() => navigate("/")}
         size="small"
         sx={{ color: "white" }}
       >

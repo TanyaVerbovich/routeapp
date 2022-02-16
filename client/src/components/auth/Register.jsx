@@ -6,8 +6,7 @@ import { Link, Navigate, useNavigate } from "react-router-dom";
 import api from "./api";
 // import LoadingButton from "@mui/lab/LoadingButton";
 
-const Register = ({ 
-  handleCloseSourceEventProviderDialog }) => {
+const Register = ({  }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("");
@@ -49,16 +48,14 @@ const Register = ({
             resp.status === 201 ||
             resp.status === 204
           ) {
-            navigate('/login')
+            navigate('/')
             // setLoading(false);
-            handleCloseSourceEventProviderDialog(e, reason, true);
           }
           if (
             resp.status === 203
           ) {
             setResult("This username is already taken");
             // setLoading(false);
-            handleCloseSourceEventProviderDialog(e, reason, true);
           }
         });
     }
@@ -138,7 +135,7 @@ const Register = ({
          Sign up
         </Button>
         <Button type="submit" variant="contained" sx={{ mb: 3, mt: 3 }}  >
-          <Link to="/login" style={{ textDecoration: 'none', color: "white" }} >Sign in</Link>
+          <Link to="/" style={{ textDecoration: 'none', color: "white" }} >Sign in</Link>
         </Button>
       </Box>
     </div>

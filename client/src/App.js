@@ -5,6 +5,8 @@ import { Routes, Route } from 'react-router'
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import NotFoundPage from './pages/NotFoundPage';
+import HomePageCustomer from './pages/HomePageCustomer';
+import Rules from './pages/Rules';
 
 
 function App() {
@@ -12,8 +14,10 @@ function App() {
     <div className="App">
     <Header />
       <Routes>
-        <Route exact path='/login' element={<LoginPage/>}/>
+        <Route exact path='/' element={<LoginPage/>}/>
         <Route exact path='/register' element={<RegisterPage/>}/>
+        <Route exact path='/rules' element={<Rules/>}/>
+        <Route exact path='/homepage/customer' element={<HomePageCustomer/>}/>
         <Route exact path='/not-found' element={<NotFoundPage/>}/>
       </Routes>
     </div>

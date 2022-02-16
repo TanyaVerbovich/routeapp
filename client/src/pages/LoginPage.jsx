@@ -6,14 +6,10 @@ import Login from "../components/auth/Login";
 const LoginPage = () => {
   const navigate = useNavigate();
 
-  const handleLogin = () => {
-    navigate("/");
-  };
-
   return (
     <div>
       <Container>
-        <Login handleLogin={handleLogin} />
+        <Login />
       </Container>
     </div>
   );

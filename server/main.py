@@ -74,6 +74,7 @@ def login_profile():
       'sep_emails': request.json['sep_emails'],
       'sep_passwords': request.json['sep_passwords']
     }
+    print(sep_users)
     query_body = {
     "query": {
         "match": {
@@ -85,14 +86,15 @@ def login_profile():
     if res["hits"]["total"]["value"] != 0:
         id_form_index = res["hits"]["hits"][0]['_source']['id']
         hashed_pass = res["hits"]["hits"][0]['_source']['password']
+        role =  res["hits"]["hits"][0]['_source']['role']
         if hashed_pass == hash_password(request.json['sep_passwords']):
             print(id_form_index)
-            return jsonify({'res': id_form_index}), 201
+            return jsonify({'role': role}), 201
         else:
             print("pass not right")
-            return jsonify({'res': id_form_index}), 203
+            return jsonify({'role': role}), 203
     else: 
-        return jsonify({'res': sep_users}), 202
+        return jsonify({'role': role}), 202
 
 
 

@@ -2,7 +2,7 @@
     height: 50px;
     background-color: #4CAF50;
     border-style: hidden;
-    display: flex;
+    /* display: flex; */
     justify-content: space-between;
     flex-direction: row-reverse;
     align-items: center;

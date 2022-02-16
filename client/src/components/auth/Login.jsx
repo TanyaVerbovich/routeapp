@@ -10,7 +10,7 @@ import api from "./api";
 import { useNavigate, useParams } from "react-router";
 import { cloneElement } from "react";
 
-const Login = ({ handleCloseSourceEventProviderDialog }) => {
+const Login = ({ }) => {
   
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -37,16 +37,17 @@ const Login = ({ handleCloseSourceEventProviderDialog }) => {
         .post(`/login_profile`, sep_users)
         .then((resp) => {
           const userId = resp.data['res'];
-          console.log(userId);
+          console.log(resp.data['role']);
           console.log(resp.status);
           if (
             resp.status === 200 ||
             resp.status === 201 ||
             resp.status === 204
           ) {
-            navigate(`/register`)
+            if (resp.data['role'] == "customer"){
+              navigate(`/homepage/customer`)
+            }
             // setLoading(false);
-            handleCloseSourceEventProviderDialog(e, reason, true);
           } 
           if (
             resp.status === 203
@@ -54,15 +55,13 @@ const Login = ({ handleCloseSourceEventProviderDialog }) => {
            {
             setResult("Password is incorrect");
             // setLoading(false);
-            handleCloseSourceEventProviderDialog(e, reason, false);
           }
           if (
             resp.status === 202
           ) 
            {
             setResult("No such user");
-            // setLoading(false);
-            handleCloseSourceEventProviderDialog(e, reason, false);
+            // setLoading(false)
           }
           
         });
