@@ -56,6 +56,17 @@
     box-shadow: 4px 8px 13px 1px #01010a73;
   }
   
+  form1 {
+    min-width: 600px;
+    width: calc(100px + 5vw);
+    min-height: 600px;
+    height: calc(100px + 5vw);
+    margin: 5px;
+    padding: 10px;
+    border-radius: 6px;
+    box-shadow: 4px 8px 13px 1px #01010a73;
+  }
+  
   .form-inputs {
     display: flex;
     flex-direction: column;

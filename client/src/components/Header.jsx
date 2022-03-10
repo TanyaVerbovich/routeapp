@@ -10,7 +10,7 @@ const Header = () => {
 
   return (
     <nav className="navbar">
-     <Link to="/rules" style={{ paddingRight: 25, fontWeight: 'bold', textDecoration: 'none', color: "white"}} >Rules</Link>
+     <Link to="/rules" style={{ paddingRight: 25, textDecoration: 'none', color: "white"}} >Rules</Link>
       <IconButton
         className="iconButton"
         onClick={() => navigate("/")}

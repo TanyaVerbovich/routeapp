@@ -11,7 +11,8 @@ import { useNavigate, useParams } from "react-router";
 import { cloneElement } from "react";
 
 const Login = ({ }) => {
-  
+
+  const { userId } = useParams();  
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 //   const [loading, setLoading] = React.useState(false);
@@ -36,8 +37,8 @@ const Login = ({ }) => {
       await api
         .post(`/login_profile`, sep_users)
         .then((resp) => {
-          const userId = resp.data['res'];
-          console.log(resp.data['role']);
+          const userId = resp.data['id'];
+          console.log(userId);
           console.log(resp.status);
           if (
             resp.status === 200 ||
@@ -45,7 +46,10 @@ const Login = ({ }) => {
             resp.status === 204
           ) {
             if (resp.data['role'] == "customer"){
-              navigate(`/homepage/customer`)
+              navigate(`/homepage/customer/${userId}`)
+            }
+            if (resp.data['role'] == "admin"){
+              navigate(`/homepage/admin/${userId}`)
             }
             // setLoading(false);
           } 
