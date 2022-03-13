@@ -1,4 +1,4 @@
-import React, {  useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Box, TextField } from "@mui/material";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
@@ -12,10 +12,10 @@ import { cloneElement } from "react";
 
 const Login = ({ }) => {
 
-  const { userId } = useParams();  
+  const { userId } = useParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-//   const [loading, setLoading] = React.useState(false);
+  //   const [loading, setLoading] = React.useState(false);
   const navigate = useNavigate();
   const [result, setResult] = useState(null);
 
@@ -45,29 +45,27 @@ const Login = ({ }) => {
             resp.status === 201 ||
             resp.status === 204
           ) {
-            if (resp.data['role'] == "customer"){
+            if (resp.data['role'] == "customer") {
               navigate(`/homepage/customer/${userId}`)
             }
-            if (resp.data['role'] == "admin"){
+            if (resp.data['role'] == "admin") {
               navigate(`/homepage/admin/${userId}`)
             }
             // setLoading(false);
-          } 
+          }
           if (
             resp.status === 203
-          ) 
-           {
+          ) {
             setResult("Password is incorrect");
             // setLoading(false);
           }
           if (
             resp.status === 202
-          ) 
-           {
+          ) {
             setResult("No such user");
             // setLoading(false)
           }
-          
+
         });
 
     }
@@ -112,21 +110,25 @@ const Login = ({ }) => {
           value={password}
           onChange={onChangePassword}
         />
-        
-        {result && <p style={{color: "red"}}>{result}</p>}
+
+        {result && <p style={{ color: "red" }}>{result}</p>}
         <Button
-          sx={{ marginTop: 1,
-                mb: 3 }}
+          sx={{
+            marginTop: 1,
+            backgroundColor: "#21b6ae",
+            color: "white",
+            mb: 3
+          }}
           onClick={handleClick}
-        //   loading={loading}
+          //   loading={loading}
           variant="contained"
         //   disableElevation
         //   disabled={loading}
         >
           Login
         </Button>
-       
-        <Button type="submit" variant="contained"  >
+
+        <Button type="submit"style={{ backgroundColor: "#21b6ae" }} variant="contained"  >
           <Link to="/register" style={{ textDecoration: 'none', color: "white" }}>Sign up</Link>
         </Button>
 

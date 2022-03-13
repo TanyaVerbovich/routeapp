@@ -1,6 +1,8 @@
 .navbar {
     height: 50px;
-    background-color: #4CAF50;
+    /* background-color: #4CAF50; */
+    /* background-color: "#C5DFEA"; */
+    background-color: #21b6ae;
     border-style: hidden;
     /* display: flex; */
     justify-content: space-between;

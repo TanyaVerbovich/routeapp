@@ -1,20 +1,20 @@
 import React, { useState } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import { TextField, Button, Grid, Select, MenuItem  } from "@mui/material";
+import { TextField, Button, Grid, Select, MenuItem } from "@mui/material";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import api from "./api";
 // import LoadingButton from "@mui/lab/LoadingButton";
 
-const Register = ({  }) => {
+const Register = ({ }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("");
   const [username, setUsername] = useState("");
-//   const [loading, setLoading] = React.useState(false);
+  //   const [loading, setLoading] = React.useState(false);
   const [result, setResult] = useState(null);
   const navigate = useNavigate();
-  
+
 
   const onChangeRole = (event) => {
     setRole(event.target.value);
@@ -35,7 +35,7 @@ const Register = ({  }) => {
     const sep_users = {
       sep_emails: email,
       sep_usernames: username,
-      sep_passwords: password, 
+      sep_passwords: password,
       sep_roles: role
     };
     async function sendRequest() {
@@ -110,31 +110,30 @@ const Register = ({  }) => {
           onChange={onChangePassword}
         />
         <Select
-                      label="Role"
-                      variant="outlined"
-                      name="role"
-                      label="Role"
-                      value={role}
-                      onChange={onChangeRole}
-                    >
-                      <MenuItem value="user">User</MenuItem>
-                      <MenuItem value="customer">Customer</MenuItem>
-                      <MenuItem value="driver">Driver</MenuItem>
-                      <MenuItem value="admin">Admin</MenuItem>
-                    </Select>
-       
-        {result && <p style={{color: "red"}}>{result}</p>}
+          label="Role"
+          variant="outlined"
+          name="role"
+          value={role}
+          onChange={onChangeRole}
+        >
+          <MenuItem value="user">User</MenuItem>
+          <MenuItem value="customer">Customer</MenuItem>
+          <MenuItem value="driver">Driver</MenuItem>
+          <MenuItem value="admin">Admin</MenuItem>
+        </Select>
+
+        {result && <p style={{ color: "red" }}>{result}</p>}
         <Button
-          sx={{ marginTop: 2 }}
+          sx={{ marginTop: 2, backgroundColor: "#21b6ae" }}
           onClick={handleClick}
-        //   loading={loading}
+          //   loading={loading}
           variant="contained"
           disableElevation
         //   disabled={loading}
         >
-         Sign up
+          Sign up
         </Button>
-        <Button type="submit" variant="contained" sx={{ mb: 3, mt: 3 }}  >
+        <Button type="submit" variant="contained" sx={{ mb: 3, mt: 3, backgroundColor: "#21b6ae" }}  >
           <Link to="/" style={{ textDecoration: 'none', color: "white" }} >Sign in</Link>
         </Button>
       </Box>

@@ -8,6 +8,7 @@ import NotFoundPage from './pages/NotFoundPage';
 import HomePageCustomer from './pages/HomePageCustomer';
 import Rules from './pages/Rules';
 import ProjectCreationPage from './pages/ProjectCreationPage';
+import EditTimetable from './pages/EditTimetable';
 import HomePageAdmin from './pages/HomePageAdmin';
 
 
@@ -21,6 +22,7 @@ function App() {
         <Route exact path='/register' element={<RegisterPage/>}/>
         <Route exact path='/rules' element={<Rules/>}/>
         <Route exact path='/homepage/admin/:userId' element={<HomePageAdmin/>}/>
+        <Route exact path='/edit/timetable/:user_id' element={<EditTimetable/>}/>
         <Route exact path='/homepage/customer/:userId' element={<HomePageCustomer/>}/>
         <Route exact path='/not-found' element={<NotFoundPage/>}/>
       </Routes>

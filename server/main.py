@@ -8,6 +8,7 @@ import os.path
 import requests
 import re
 import datetime
+from datetime import timedelta
 from geopy.geocoders import Nominatim
 import json
 import hashlib
@@ -35,6 +36,21 @@ def get_username(user_id):
     return jsonify({'username': user_name}), 201
 
 
+@app.route('/timetable/username/<string:user_id>', methods=['GET', 'POST'])
+def get_username_from_timetable(user_id):
+    query_body = {
+    "query": {
+        "match": {
+            "userId": user_id
+        }
+    }
+    }
+    res_user = es.search(index="timetable", body=query_body)
+    user_name = res_user["hits"]["hits"][0]["_source"]["userName"]
+    print(user_name)
+    return jsonify({'username': user_name}), 201
+
+
 @app.route('/users', methods=['GET', 'POST'])
 def get_all_users():
     ls = []
@@ -48,7 +64,19 @@ def get_all_users():
             ls.append(user)
         return jsonify({'users': ls})
 
+
+# @app.route('/ords', methods=['GET', 'POST'])
+# def get_all_ords():
+#     user_obj = {
+#             "userName" : "Egor Dorozhkin",
+#             'timeBegin': "9:00",
+#             'timeEnd': "18:00",
+#             'weekdays': "Saturday, Sunday", 
+#         }   
+#     print(user_obj)
+#     result = es.index(index='timetable', body=user_obj, request_timeout=30)
         
+
 @app.route('/drivers', methods=['GET', 'POST'])
 def get_all_drivers():
     ls = []
@@ -62,6 +90,47 @@ def get_all_drivers():
             ls.append(driver)
         return jsonify({'drivers': ls}), 201
 
+
+@app.route('/edit_timetable/<string:user_id>', methods=['GET', 'POST'])
+def edit_timetable(user_id):
+    sep_users = dict()
+    if request.json['timeBegin']:
+        sep_users['timeBegin'] = request.json['timeBegin']
+    if request.json['timeEnd']:
+        sep_users['timeEnd'] = request.json['timeEnd']
+    if request.json['weekdays']:
+        sep_users['weekdays'] = request.json['weekdays']
+        
+    update_body = dict()
+    update_body["doc"] = dict()
+    for item in sep_users.keys():
+        update_body["doc"][item] = sep_users[item]            
+    print(update_body)
+    query_body = {
+    "query": {
+        "match": {
+            "userId": user_id
+        }
+    }
+    }
+    res = es.search(index="timetable", body=query_body)
+    _id = res['hits']['hits'][0]["_id"]
+    es.update(
+        index='timetable', id=_id, body=update_body, request_timeout=200)
+    return sep_users, 201
+
+
+@app.route('/timetable', methods=['GET', 'POST'])
+def get_timetable():
+    ls = []
+    tb = {}
+    res = requests.post("http://127.0.0.1:9200/timetable/_search?pretty")
+    number_values = res.json()["hits"]["total"]["value"]
+    if len(res.json()["hits"]["hits"]):
+        for i in range(number_values):
+            tb = res.json()["hits"]["hits"][i]['_source']
+            ls.append(tb)
+        return jsonify({'timetable': ls}), 201
 
 
 @app.route('/add_profile', methods=['GET', 'POST'])
@@ -114,6 +183,10 @@ def add_profile():
         return jsonify({'users': sep_users}), 203
 
 
+@app.route('/getDays', methods=['GET', 'POST'])
+def get_days():
+    return jsonify({'monday': get_mond_sun()[0], 'sunday': get_mond_sun()[1]}), 202
+
 
 @app.route('/login_profile', methods=['GET', 'POST'])
 def login_profile():
@@ -140,7 +213,7 @@ def login_profile():
             print("pass not right")
             return jsonify({'id': id_form_index, 'role': role}), 203
     else: 
-        return jsonify({'id': id_form_index, 'role': role}), 202
+        return jsonify({'users': sep_users}), 202
 
 
 
@@ -158,8 +231,10 @@ def add_order(user_id):
         data_from_file = request.files['file']
         data_from_file.save(os.path.join(app.config['FILE_UPLOADS'], user_id+"_"+data_from_file.filename))
     try:
-        print(datetime.datetime.strptime(request.form.get('time'), '%d/%m/%Y %H:%M'))
+        conv_time = datetime.datetime.strptime(request.form.get('time'), '%d/%m/%Y %H:%M')
         distance = get_distance(new_order['address_from'], new_order['address_to'])
+        [dict_order, weigth_of_order] = read_csv(distance, os.path.join(app.config['FILE_UPLOADS'], user_id+"_"+data_from_file.filename))
+        time_begin = get_time_beginning(conv_time, distance)
         # orders_obj = {
         #         "user_id" : new_order['user_Id'],
         #         'company_name': new_order['company_name'],
@@ -177,7 +252,9 @@ def add_order(user_id):
     except ValueError:
         return jsonify({'user_id': user_id}), 203
     except AttributeError:
-        return jsonify({'user_id': user_id}), 202        
+        return jsonify({'user_id': user_id}), 202 
+    finally:
+        print(get_mond_sun())
 
 
 def hash_password(password):
@@ -199,9 +276,37 @@ def get_distance(place1, place2):
     return distance
 
 
-# def get_price(distance, file):
+def read_csv(distance, file):
+    order = dict()
+    file1 = open(file, 'r')
+    Lines = file1.readlines()
+
+    items = []
+    number = []
+    weigth = []
+    weigth_summ = 0
+    for line in Lines:
+        [var1, var2, var3] = line.split(",")
+        order[var1] = var2
+        weigth_summ+=float(var3)
+    return order, weigth_summ
+    
+
+def get_time_beginning(time_end, distance):
+    time_for_order= distance/80
+    minutes = round(time_for_order * 60 - round(time_for_order)*60)
+    hours = round(time_for_order)
+    d = time_end - timedelta(hours=hours, minutes=minutes)
+    return d
+
+def get_mond_sun():
+    now = datetime.datetime.now()
+    monday = now - timedelta(days = now.weekday())
+    sunday = monday + timedelta(days = 7)
+    return monday.strftime("%d"), sunday.strftime("%d %b")
 
 
 
 if __name__ == '__main__':
     app.run()
+ 

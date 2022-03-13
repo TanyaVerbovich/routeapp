@@ -80,7 +80,7 @@ const HomePageCustomer = () => {
               <Button
                 onClick={handleCreation}
                 variant="contained"
-                sx={{ width: "115px", textTransform: "none" }}
+                sx={{ width: "115px", textTransform: "none",  backgroundColor: "#21b6ae" }}
                 disableElevation
               >
                 New order
@@ -114,23 +114,9 @@ const HomePageCustomer = () => {
                     variant="outlined"
                     size="small"
                     placeholder="Filter by name..."
-                    sx={{ pr: 1 }}
+                    sx={{ pl: 17 }}
                   />
-                  <FormControl>
-                    <Select
-                      defaultValue={1}
-                      id="grouped-select"
-                      size="small"
-                      sx={{ pl: 1 }}
-                    >
-                      <optgroup label="Sort by" size="small"></optgroup>
-                      {/* <MenuItem value={1}>Last updated</MenuItem>
-                      <MenuItem value={2}>Last created</MenuItem>
-                      <MenuItem value={3}>Owned by me</MenuItem>
-                      <MenuItem value={4}>Owned by anyone</MenuItem> */}
-                    </Select>
-                  </FormControl>
-                </Grid>
+                  </Grid>
               </Box>
 
               <TabPanel value="1">
