@@ -42,7 +42,6 @@ const HomePageAdmin = () => {
     setProjectsTab(newValue);
   };
 
-  // TODO Edit timetable of driver and also add page for this edition also add method on server to do this
   function handleEditItem(driver_id) {
     navigate(`/edit/timetable/${driver_id}`);
   }
