@@ -91,6 +91,21 @@ def get_all_drivers():
         return jsonify({'drivers': ls}), 201
 
 
+@app.route('/delete/driver/<string:driver_phone>', methods=['GET', 'POST'])
+def delete_driver(driver_phone):
+    query_body = {
+    "query": {
+        "match": {
+            "phone": driver_phone
+        }
+    }
+    }
+    res = es.search(index="drivers", body=query_body)
+    _id = res['hits']['hits'][0]["_id"]
+    es.delete(index="drivers", doc_type="_doc", id=_id)
+    return _id
+
+
 @app.route('/edit_timetable/<string:user_id>', methods=['GET', 'POST'])
 def edit_timetable(user_id):
     sep_users = dict()
@@ -131,6 +146,30 @@ def get_timetable():
             tb = res.json()["hits"]["hits"][i]['_source']
             ls.append(tb)
         return jsonify({'timetable': ls}), 201
+
+
+@app.route('/add_driver/<string:user_id>', methods=['GET', 'POST'])
+def add_driver(user_id):
+    sep_users = {
+      'userName': request.json['userName'],
+      'phone':request.json['phone'],
+      'car': request.json['car'], 
+      'fuelConsumption': request.json['fuelConsumption']
+    }
+    query_body2 = {
+    "query": {
+        "match": {
+            "userName": request.json['userName']
+        }
+    }
+    }
+    res_user = es.search(index="drivers", body=query_body2)
+    if res_user["_shards"]["successful"] == 0:
+        print(user_id, " *** ", res_user)
+        result = es.index(index='driver', body=sep_users, request_timeout=30)
+        return jsonify({'user_id': user_id}), 201
+    else: 
+        return jsonify({'userName': request.json['userName']}), 203
 
 
 @app.route('/add_profile', methods=['GET', 'POST'])
@@ -293,7 +332,7 @@ def read_csv(distance, file):
     
 
 def get_time_beginning(time_end, distance):
-    time_for_order= distance/80
+    time_for_order= distance/70
     minutes = round(time_for_order * 60 - round(time_for_order)*60)
     hours = round(time_for_order)
     d = time_end - timedelta(hours=hours, minutes=minutes)

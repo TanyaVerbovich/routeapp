@@ -9,6 +9,7 @@ import HomePageCustomer from './pages/HomePageCustomer';
 import Rules from './pages/Rules';
 import ProjectCreationPage from './pages/ProjectCreationPage';
 import EditTimetable from './pages/EditTimetable';
+import CreateDriver from './pages/CreateDriver';
 import HomePageAdmin from './pages/HomePageAdmin';
 
 
@@ -21,6 +22,7 @@ function App() {
         <Route exact path='/orders/create/:userId' element={<ProjectCreationPage/>}/>
         <Route exact path='/register' element={<RegisterPage/>}/>
         <Route exact path='/rules' element={<Rules/>}/>
+        <Route exact path='/create/driver/:user_id' element={<CreateDriver/>}/>
         <Route exact path='/homepage/admin/:userId' element={<HomePageAdmin/>}/>
         <Route exact path='/edit/timetable/:user_id' element={<EditTimetable/>}/>
         <Route exact path='/homepage/customer/:userId' element={<HomePageCustomer/>}/>

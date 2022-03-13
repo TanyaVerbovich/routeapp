@@ -38,7 +38,7 @@ export default function MediaCard() {
           The example of such file you can see above. Could you please create this file exactly in such format, that means using comma as delimiter of columns 
           and write information about name, weigth and number of items of your order. When you will add necessary information about the order 
           the price of such order will appear at the page and you can confirm the order if everything about the order is suitable for you.
-          Also, please time should be written in format "DD/MM/YYYY HH:MM", addressFrom and addressTo should be written in formats "Town, Street, house-building of the house(optional)-flat"
+          Also, please time should be written in format "DD/MM/YYYY HH:MM", addressFrom and addressTo should be written in formats "Town Street house building of the house(optional) flat"
         </Typography>
       </CardContent>
     </Box>

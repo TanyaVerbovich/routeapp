@@ -47,6 +47,14 @@ const HomePageAdmin = () => {
     navigate(`/edit/timetable/${driver_id}`);
   }
 
+  function handleDeleteItem(driver_phone) {
+    api.post(`/delete/driver/${driver_phone}`).then((resp) => console.log(resp.data))
+  }
+
+  function handleAddDriver(user_id) {
+    navigate(`/create/driver/${user_id}`);
+  }
+
 
   function getUserName() {
     api.post(`/username/${userId}`).then((response) => {
@@ -73,7 +81,7 @@ const HomePageAdmin = () => {
     fetchProjects();
   }, [navigate]);
 
-  
+
   useEffect(() => {
     async function fetchProjects() {
       let response = await api.get(`/timetable`);
@@ -234,6 +242,20 @@ const HomePageAdmin = () => {
                               variant="filled"
                             />
                           </TableCell>
+                          {item.role == 'driver' ?
+                            <Button
+                              style={{
+                                borderRadius: 35,
+                                backgroundColor: "#21b6ae",
+                                padding: "9px 18px",
+                                fontSize: "12px"
+                              }}
+                              variant="contained"
+                             onClick={() => handleAddDriver(item.id)}
+                            >
+                              Add
+                            </Button> : null
+                          }
                         </TableRow>
                       ))}
                     </TableBody>
@@ -358,6 +380,18 @@ const HomePageAdmin = () => {
                               </Typography>
                             </MuiLink>
                           </TableCell>
+                          <Button
+                            style={{
+                              borderRadius: 35,
+                              backgroundColor: "#21b6ae",
+                              padding: "9px 18px",
+                              fontSize: "12px"
+                            }}
+                            variant="contained"
+                            onClick={() => handleDeleteItem(driv.phone)}
+                          >
+                            Delele
+                          </Button>
                         </TableRow>
                       ))}
                     </TableBody>
@@ -370,7 +404,7 @@ const HomePageAdmin = () => {
                   <Table>
                     <TableHead>
                       {getDays()}
-                      {monday && sunday && <Typography variant="h9" sx={{ ml: 0, fontWeight:"bold" }}>{monday}-{sunday}</Typography>}
+                      {monday && sunday && <Typography variant="h9" sx={{ ml: 0, fontWeight: "bold" }}>{monday}-{sunday}</Typography>}
                       <TableRow>
                         <TableCell align="left">
                           <AppsIcon sx={{ ml: 1, mt: 1 }} />
@@ -435,7 +469,7 @@ const HomePageAdmin = () => {
                             onClick={() => handleEditItem(dt.userId)}
                           >
                             Edit
-                             {/* <Link to=`/edit/timetable/${user_id}` style={{ textDecoration: 'none', color: "white" }}>Edit</Link> */}
+                            {/* <Link to=`/edit/timetable/${user_id}` style={{ textDecoration: 'none', color: "white" }}>Edit</Link> */}
                           </Button>
                         </TableRow>
                       ))}
@@ -448,7 +482,7 @@ const HomePageAdmin = () => {
           </Container>
         </Container>
       </Box>
-    </div>
+    </div >
   );
 };
 

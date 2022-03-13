@@ -6,7 +6,6 @@ import "./login.css";
 import { Link } from "react-router-dom";
 import Grid from "@mui/material/Grid";
 import api from "./api";
-// import LoadingButton from "@mui/lab";
 import { useNavigate, useParams } from "react-router";
 import { cloneElement } from "react";
 
@@ -15,7 +14,6 @@ const Login = ({ }) => {
   const { userId } = useParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  //   const [loading, setLoading] = React.useState(false);
   const navigate = useNavigate();
   const [result, setResult] = useState(null);
 
@@ -28,7 +26,6 @@ const Login = ({ }) => {
 
 
   const handleClick = (e, reason) => {
-    // setLoading(true);
     const sep_users = {
       sep_emails: email,
       sep_passwords: password
@@ -51,19 +48,16 @@ const Login = ({ }) => {
             if (resp.data['role'] == "admin") {
               navigate(`/homepage/admin/${userId}`)
             }
-            // setLoading(false);
           }
           if (
             resp.status === 203
           ) {
             setResult("Password is incorrect");
-            // setLoading(false);
           }
           if (
             resp.status === 202
           ) {
             setResult("No such user");
-            // setLoading(false)
           }
 
         });
@@ -127,13 +121,9 @@ const Login = ({ }) => {
         >
           Login
         </Button>
-
-        <Button type="submit"style={{ backgroundColor: "#21b6ae" }} variant="contained"  >
+        <Button type="submit" style={{ backgroundColor: "#21b6ae" }} variant="contained"  >
           <Link to="/register" style={{ textDecoration: 'none', color: "white" }}>Sign up</Link>
         </Button>
-
-
-
       </Box>
     </div>
   );

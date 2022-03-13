@@ -27,30 +27,33 @@ import { useNavigate, useParams } from "react-router-dom";
 import api from "../components/auth/api";
 
 
-const EditTimetable = () => {
+const CreateDriver = () => {
   const { user_id, userId } = useParams();
   const [userName, setUsername] = useState(null);
   const [warning, setWarning] = useState(null);
   const [value, setValue] = React.useState("1");
-  const [timeBegin, setTimeBegin] = React.useState("");
-  const [timeEnd, setTimeEnd] = React.useState("");
-  const [weekdays, setWeekdays] = React.useState("");
+  const [phone, setPhone] = React.useState("");
+  const [car, setCar] = React.useState("");
+  const [fuelConsumption, setFuelConsumption] = React.useState("");
   const navigate = useNavigate();
 
 
   const handleCreateButton = (e, reason) => {
     const sep_users = {
-      timeBegin: timeBegin,
-      timeEnd: timeEnd,
-      weekdays: weekdays
+      userName: userName,
+      phone: phone,
+      car: car,
+      fuelConsumption: fuelConsumption
     };
     async function sendRequest() {
       await api
-        .post(`/edit_timetable/${user_id}`, sep_users)
+        .post(`/add_driver/${user_id}`, sep_users)
         .then((resp) => {
           if (resp.status == 201){
-            setWarning("edited successfully")
-            navigate(`/homepage/admin/${userId}`)
+            setWarning("added successfully")
+          }
+          if (resp.status == 203){
+              setWarning("such driver already exists")
           }
         });
 
@@ -65,16 +68,16 @@ const EditTimetable = () => {
     });
   };
 
-  const handleTimeBegin = (event) => {
-    setTimeBegin(event.target.value);
+  const handlePhone = (event) => {
+    setPhone(event.target.value);
   };
 
-  const handleTimeEnd = (event) => {
-    setTimeEnd(event.target.value);
+  const handleCar = (event) => {
+    setCar(event.target.value);
   };
 
-  const handleWeekdays = (event) => {
-    setWeekdays(event.target.value);
+  const handleFuelConsumption = (event) => {
+    setFuelConsumption(event.target.value);
   };
 
   return (
@@ -95,16 +98,16 @@ const EditTimetable = () => {
                   sx={{ mb: 3 }}
                 >
                   <Grid item>
-                    <Typography>Time Begin:</Typography>
+                    <Typography>Phone:</Typography>
                   </Grid>
                   <Grid item xs={8}>
                     <TextField
                       variant="outlined"
-                      label='9:00'
+                      label='375291234567'
                       fullWidth={true}
                       size="small"
-                      value={timeBegin}
-                      onChange={(e) => handleTimeBegin(e)}
+                      value={phone}
+                      onChange={(e) => handlePhone(e)}
                     />
                   </Grid>
                 </Grid>
@@ -117,16 +120,16 @@ const EditTimetable = () => {
                   sx={{ mb: 3 }}
                 >
                   <Grid item>
-                    <Typography>Time End:</Typography>
+                    <Typography>Car:</Typography>
                   </Grid>
                   <Grid item xs={8}>
                     <TextField
-                      label="18:00"
+                      label="Audi 100"
                       variant="outlined"
                       fullWidth={true}
                       size="small"
-                      value={timeEnd}
-                      onChange={(e) => handleTimeEnd(e)}
+                      value={car}
+                      onChange={(e) => handleCar(e)}
                     />
                   </Grid>
                 </Grid>
@@ -139,16 +142,16 @@ const EditTimetable = () => {
                   sx={{ mb: 3 }}
                 >
                   <Grid item>
-                    <Typography>Weekdays:</Typography>
+                    <Typography>Fuel consumption:</Typography>
                   </Grid>
                   <Grid item xs={8}>
                     <TextField
-                      label="Saturday, Sunday"
+                      label="8"
                       variant="outlined"
                       fullWidth={true}
                       size="small"
-                      value={weekdays}
-                      onChange={(e) => handleWeekdays(e)}
+                      value={fuelConsumption}
+                      onChange={(e) => handleFuelConsumption(e)}
                     />
                   </Grid>
                 </Grid>
@@ -184,7 +187,7 @@ const EditTimetable = () => {
                       variant="contained"
                       // disableElevation
                     >
-                      Edit
+                      Add
                     </Button>
                   </Grid>
                 </Grid>
@@ -197,4 +200,4 @@ const EditTimetable = () => {
   );
 };
 
-export default EditTimetable;
+export default CreateDriver;
