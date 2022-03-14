@@ -43,15 +43,15 @@ const HomePageAdmin = () => {
   };
 
   function handleEditItem(driver_id) {
-    navigate(`/edit/timetable/${driver_id}`);
+    navigate(`/edit/timetable/${userId}/${driver_id}`);
   }
 
   function handleDeleteItem(driver_phone) {
     api.post(`/delete/driver/${driver_phone}`).then((resp) => console.log(resp.data))
   }
 
-  function handleAddDriver(user_id) {
-    navigate(`/create/driver/${user_id}`);
+  function handleAddDriver(driver_id) {
+    navigate(`/create/driver/${userId}/${driver_id}`);
   }
 
 

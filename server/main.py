@@ -13,6 +13,7 @@ from geopy.geocoders import Nominatim
 import json
 import hashlib
 import math
+import random
 
 app = Flask(__name__)
 es = Elasticsearch('http://127.0.0.1:9200')
@@ -106,13 +107,13 @@ def delete_driver(driver_phone):
     return _id
 
 
-@app.route('/edit_timetable/<string:user_id>', methods=['GET', 'POST'])
-def edit_timetable(user_id):
+@app.route('/edit_timetable/<string:user_id>/<string:driver_id>', methods=['GET', 'POST'])
+def edit_timetable(user_id, driver_id):
     sep_users = dict()
     if request.json['timeBegin']:
-        sep_users['timeBegin'] = request.json['timeBegin']
+        sep_users['timeBegin'] = get_minutes(request.json['timeBegin'])
     if request.json['timeEnd']:
-        sep_users['timeEnd'] = request.json['timeEnd']
+        sep_users['timeEnd'] = get_minutes(request.json['timeEnd'])
     if request.json['weekdays']:
         sep_users['weekdays'] = request.json['weekdays']
         
@@ -124,7 +125,7 @@ def edit_timetable(user_id):
     query_body = {
     "query": {
         "match": {
-            "userId": user_id
+            "userId": driver_id
         }
     }
     }
@@ -144,14 +145,29 @@ def get_timetable():
     if len(res.json()["hits"]["hits"]):
         for i in range(number_values):
             tb = res.json()["hits"]["hits"][i]['_source']
+            timeBeg = tb['timeBegin']
+            timeEn = tb['timeEnd']
+            tb['timeBegin'] = get_time(timeBeg)
+            tb['timeEnd'] = get_time(timeEn)
             ls.append(tb)
         return jsonify({'timetable': ls}), 201
 
 
-@app.route('/add_driver/<string:user_id>', methods=['GET', 'POST'])
-def add_driver(user_id):
+@app.route('/add_driver/<string:user_id>/<string:driver_id>', methods=['GET', 'POST'])
+def add_driver(user_id, driver_id):
+    query_body = {
+    "query": {
+        "match": {
+            "id": driver_id
+        }
+    }
+    }
+    print(driver_id)
+    res = es.search(index="users", body=query_body)
+    print(res)
+    userName = res["hits"]["hits"][0]["_source"]["userName"]
     sep_users = {
-      'userName': request.json['userName'],
+      'userName': userName,
       'phone':request.json['phone'],
       'car': request.json['car'], 
       'fuelConsumption': request.json['fuelConsumption']
@@ -159,17 +175,17 @@ def add_driver(user_id):
     query_body2 = {
     "query": {
         "match": {
-            "userName": request.json['userName']
+            "userName": userName
         }
     }
     }
     res_user = es.search(index="drivers", body=query_body2)
     if res_user["_shards"]["successful"] == 0:
-        print(user_id, " *** ", res_user)
+        print(driver_id, " *** ", res_user)
         result = es.index(index='driver', body=sep_users, request_timeout=30)
-        return jsonify({'user_id': user_id}), 201
+        return jsonify({'driver_id': driver_id}), 201
     else: 
-        return jsonify({'userName': request.json['userName']}), 203
+        return jsonify({'userName': userName}), 203
 
 
 @app.route('/add_profile', methods=['GET', 'POST'])
@@ -274,6 +290,90 @@ def add_order(user_id):
         distance = get_distance(new_order['address_from'], new_order['address_to'])
         [dict_order, weigth_of_order] = read_csv(distance, os.path.join(app.config['FILE_UPLOADS'], user_id+"_"+data_from_file.filename))
         time_begin = get_time_beginning(conv_time, distance)
+        monday = get_mond_sun_full()[0]
+        sunday = get_mond_sun_full()[1]
+        print(get_minutes(time_begin.time().strftime('%H:%M')))
+        print(get_minutes(conv_time.time().strftime('%H:%M')))
+        list1 = []
+        list2 = []
+        list3 = []
+        #logics for order in current week
+        if (monday <= time_begin.strftime("%d %b")) and (time_begin.strftime("%d %b") <= sunday):
+            #logics for driver whos worktime is suitable for order
+            query_body1 = {
+            "query": {
+                "range": {
+                    "timeBegin": {
+                        "lte": int(get_minutes(time_begin.time().strftime('%H:%M')))
+                    }
+                }
+            }
+            }
+            res1 = es.search(index="timetable", body=query_body1, request_timeout=300)
+            for item in range(res1['hits']['total']['value']):
+                list1.append(res1['hits']['hits'][item]['_source']['userName'])
+            print(list1)
+            query_body2 = {
+            "query": {
+                "range": {
+                    "timeEnd": {
+                        "gte": int(get_minutes(conv_time.time().strftime('%H:%M')))
+                    }
+                }
+            }
+            }
+            res2 = es.search(index="timetable", body=query_body2, request_timeout=300)
+            for item in range(res2['hits']['total']['value']):
+                list2.append(res2['hits']['hits'][item]['_source']['userName'])
+            print(list2)
+            #check weekdays
+            print(conv_time.strftime('%A'))
+            query={  
+            "query":{  
+                "query_string":{  
+                    "default_field":"weekdays",
+                    "query":"*"+conv_time.strftime('%A')+"*"
+                }
+            }
+            } 
+            result_weekday = es.search(index="timetable", body=query)
+            for item in range(result_weekday['hits']['total']['value']):
+                list3.append(result_weekday['hits']['hits'][item]['_source']['userName'])
+            print(list3)
+            #suitable drivers
+            list_timet = list(set(list1) & set(list2))
+            if len(list1) and len(list2):
+                for item in list3:
+                    if item in list_timet:
+                        list_timet.remove(item)
+                name_driver = random.choice(list_timet)
+                print(name_driver)
+                query_body = {
+                "query": {
+                    "match": {
+                        "userName": name_driver
+                    }
+                }
+                }
+                res_user = es.search(index="drivers", body=query_body)
+                print(res_user['hits']['hits'][0]['_source']["userName"])
+                driver_for_order = res_user['hits']['hits'][0]['_source']["userName"]
+                query_driver ={
+                "query": {
+                    "match": {
+                        "userName": driver_for_order
+                    }
+                }
+                }
+                res_dr = es.search(index="drivers", body=query_driver)
+                bensin = res_dr['hits']['hits'][0]['_source']['fuelConsumption']*distance/100
+                print(get_price(weigth_of_order, bensin, distance))
+            else:
+                print("sorry no available drivers")
+        else:
+            print("sorry there is no timetable for such time")
+        
+        
         # orders_obj = {
         #         "user_id" : new_order['user_Id'],
         #         'company_name': new_order['company_name'],
@@ -292,8 +392,6 @@ def add_order(user_id):
         return jsonify({'user_id': user_id}), 203
     except AttributeError:
         return jsonify({'user_id': user_id}), 202 
-    finally:
-        print(get_mond_sun())
 
 
 def hash_password(password):
@@ -320,9 +418,6 @@ def read_csv(distance, file):
     file1 = open(file, 'r')
     Lines = file1.readlines()
 
-    items = []
-    number = []
-    weigth = []
     weigth_summ = 0
     for line in Lines:
         [var1, var2, var3] = line.split(",")
@@ -341,10 +436,51 @@ def get_time_beginning(time_end, distance):
 def get_mond_sun():
     now = datetime.datetime.now()
     monday = now - timedelta(days = now.weekday())
-    sunday = monday + timedelta(days = 7)
+    sunday = monday + timedelta(days = 6)
     return monday.strftime("%d"), sunday.strftime("%d %b")
 
 
+def get_mond_sun_full():
+    now = datetime.datetime.now()
+    monday = now - timedelta(days = now.weekday())
+    sunday = monday + timedelta(days = 6)
+    return monday.strftime("%d %b"), sunday.strftime("%d %b")
+
+
+def get_minutes(given_time):
+    ###convert time to minutes
+    hours = given_time.split(":")[0]
+    minutes = given_time.split(":")[1]
+    return int(hours)*60+ int(minutes)
+
+
+def get_time(given_minutes):
+   ###
+    hours = round(given_minutes/60)
+    minutes = given_minutes - hours*60
+    if minutes == 0:
+         return str(hours)+":"+str(minutes)+"0"
+    else:
+        return str(hours)+":"+str(minutes)
+ 
+
+def parse_api():
+    ###parse site with actual bensin prices to get price for bensin
+    response = requests.get("https://ru.globalpetrolprices.com/Belarus/gasoline_prices/")
+    return float(response.text[response.text.find('<th height="30">&nbsp;BYN</th>')+len('<td height="30" align="center"> <td height="30" align="center">'):][0:5])
+
+
+def get_price(weigth_of_order, bensin, distance):
+    money_for_road = parse_api()*bensin
+    if (weigth_of_order < 20):
+        coef = 0
+    elif (weigth_of_order < 100) and (weigth_of_order > 20):
+        coef = 5
+    elif (weigth_of_order >100) and (weigth_of_order < 200):
+        coef = 15
+    money_rider = distance/70 * 2 *10
+    return 1.5*(money_for_road+weigth_of_order+coef+money_rider)
+    
 
 if __name__ == '__main__':
     app.run()

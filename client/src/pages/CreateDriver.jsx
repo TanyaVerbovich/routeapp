@@ -28,7 +28,7 @@ import api from "../components/auth/api";
 
 
 const CreateDriver = () => {
-  const { user_id, userId } = useParams();
+  const { userId, driver_id } = useParams();
   const [userName, setUsername] = useState(null);
   const [warning, setWarning] = useState(null);
   const [value, setValue] = React.useState("1");
@@ -47,7 +47,7 @@ const CreateDriver = () => {
     };
     async function sendRequest() {
       await api
-        .post(`/add_driver/${user_id}`, sep_users)
+        .post(`/add_driver/${userId}/${driver_id}`, sep_users)
         .then((resp) => {
           if (resp.status == 201){
             setWarning("added successfully")
@@ -63,7 +63,7 @@ const CreateDriver = () => {
 
 
   function getUserName() {
-    api.post(`/timetable/username/${user_id}`).then((response) => {
+    api.post(`/timetable/username/${driver_id}`).then((response) => {
       setUsername(response.data['username'])
     });
   };
