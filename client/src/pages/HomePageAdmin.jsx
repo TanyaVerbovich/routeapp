@@ -36,6 +36,7 @@ const HomePageAdmin = () => {
   const [currItems, setCurrItems] = useState([]);
   const [currOrders, setCurrOrders] = useState([]);
   const [currDrivers, setCurrDrivers] = useState([]);
+  const [currMany, setCurrMany] = useState([]);
   const [projectsTab, setProjectsTab] = useState("1");
 
   const handleProjectsTabIndexChange = (e, newValue) => {
@@ -96,6 +97,18 @@ const HomePageAdmin = () => {
       let response = await api.get(`/ords`);
       response = await response.data.orders;
       setCurrOrders(response);
+      console.log(response);
+    }
+    fetchProjects();
+  }, [navigate]);
+
+
+
+  useEffect(() => {
+    async function fetchProjects() {
+      let response = await api.get(`/many`);
+      response = await response.data.ord_driver;
+      setCurrMany(response);
       console.log(response);
     }
     fetchProjects();
@@ -181,13 +194,21 @@ const HomePageAdmin = () => {
                     }
                     value="4"
                   />
+                   <Tab
+                    label={
+                      <span style={{ fontSize: 14, textTransform: "none" }}>
+                        Drivers-Orders
+                      </span>
+                    }
+                    value="5"
+                  />
                 </TabList>
 
                 <Grid item xs={4} sx={{ display: "inherit" }}>
                   <TextField
                     variant="outlined"
                     size="small"
-                    placeholder="Filter by name..."
+                    placeholder="Filter by name"
                     sx={{ pl: 17 }}
                   />
                 </Grid>
@@ -273,16 +294,18 @@ const HomePageAdmin = () => {
                         </TableCell>
                         <TableCell align="left">Company name</TableCell>
                         <TableCell align="left">Adsress from&nbsp;</TableCell>
-                        <TableCell align="left">Time&nbsp;</TableCell>
                         <TableCell align="left">Address to&nbsp;</TableCell>
+                        <TableCell align="left">Time from&nbsp;</TableCell>
+                        <TableCell align="left">Time to&nbsp;</TableCell>
                         <TableCell align="left">Phone&nbsp;</TableCell>
                         <TableCell align="left">Price&nbsp;</TableCell>
+                        <TableCell align="left">Weight&nbsp;</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
                       {currOrders.map((ord, index) => (
                         <TableRow
-                          key={ord.userName}
+                          key={ord.company_name}
                           sx={{
                             "&:last-child td, &:last-child th": { border: 0 },
                           }}
@@ -297,22 +320,58 @@ const HomePageAdmin = () => {
                           <TableCell align="left">
                             <MuiLink underline="hover" color="text.primary">
                               <Typography fontSize={14}>
-                                {ord.userName}
+                                {ord.company_name}
                               </Typography>
                             </MuiLink>
                           </TableCell>
                           <TableCell align="left">
                             <MuiLink underline="hover" color="text.primary">
                               <Typography fontSize={14}>
-                                {ord.mail}
+                                {ord.addres_from}
                               </Typography>
                             </MuiLink>
                           </TableCell>
                           <TableCell align="left">
-                            <Chip
-                              label={ord.role}
-                              variant="filled"
-                            />
+                            <MuiLink underline="hover" color="text.primary">
+                              <Typography fontSize={14}>
+                                {ord.address_to}
+                              </Typography>
+                            </MuiLink>
+                          </TableCell>
+                          <TableCell align="left">
+                            <MuiLink underline="hover" color="text.primary">
+                              <Typography fontSize={14}>
+                                {ord.time_from}
+                              </Typography>
+                            </MuiLink>
+                          </TableCell>
+                          <TableCell align="left">
+                            <MuiLink underline="hover" color="text.primary">
+                              <Typography fontSize={14}>
+                                {ord.time_to}
+                              </Typography>
+                            </MuiLink>
+                          </TableCell>
+                          <TableCell align="left">
+                            <MuiLink underline="hover" color="text.primary">
+                              <Typography fontSize={14}>
+                                {ord.phone}
+                              </Typography>
+                            </MuiLink>
+                          </TableCell>
+                          <TableCell align="left">
+                            <MuiLink underline="hover" color="text.primary">
+                              <Typography fontSize={14}>
+                                {ord.price}
+                              </Typography>
+                            </MuiLink>
+                          </TableCell>
+                          <TableCell align="left">
+                            <MuiLink underline="hover" color="text.primary">
+                              <Typography fontSize={14}>
+                                {ord.weight}
+                              </Typography>
+                            </MuiLink>
                           </TableCell>
                         </TableRow>
                       ))}
@@ -470,6 +529,55 @@ const HomePageAdmin = () => {
                             Edit
                             {/* <Link to=`/edit/timetable/${user_id}` style={{ textDecoration: 'none', color: "white" }}>Edit</Link> */}
                           </Button>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </TabPanel>
+
+              <TabPanel value="5">
+                <TableContainer>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell align="left">
+                          <AppsIcon sx={{ ml: 1, mt: 1 }} />
+                        </TableCell>
+                        <TableCell align="left">Driver</TableCell>
+                        <TableCell align="left">Order&nbsp;</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {currMany.map((man, index) => (
+                        <TableRow
+                          key={man.driver_id}
+                          sx={{
+                            "&:last-child td, &:last-child th": { border: 0 },
+                          }}
+                        >
+                          <TableCell
+                            component="th"
+                            scope="row"
+                            align="left"
+                            width="70"
+                          >
+                          </TableCell>
+                          <TableCell align="left">
+                            <MuiLink underline="hover" color="text.primary">
+                              <Typography fontSize={14}>
+                                {man.driver_id}
+                              </Typography>
+                            </MuiLink>
+                          </TableCell>
+                          <TableCell align="left">
+                            <MuiLink underline="hover" color="text.primary">
+                              <Typography fontSize={14}>
+                                {man.order_id}
+                              </Typography>
+                            </MuiLink>
+                          </TableCell>
+                         
                         </TableRow>
                       ))}
                     </TableBody>

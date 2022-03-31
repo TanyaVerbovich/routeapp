@@ -44,14 +44,14 @@ const HomePageCustomer = () => {
     navigate(`/orders/create/${userId}`);
   }
 
-  // useEffect(() => {
-  //   async function fetchProjects() {
-  //     let response = await api.get(`/ord/${userId}`);
-  //     response = await response.data.projects;
-  //     setCurrItems(response);
-  //   }
-  //   fetchProjects();
-  // }, [userId, navigate]);
+  useEffect(() => {
+    async function fetchProjects() {
+      let response = await api.get(`/ords/${userId}`);
+      response = await response.data.orders;
+      setCurrItems(response);
+    }
+    fetchProjects();
+  }, [userId, navigate]);
 
   return (
     <div>
@@ -113,7 +113,7 @@ const HomePageCustomer = () => {
                   <TextField
                     variant="outlined"
                     size="small"
-                    placeholder="Filter by name..."
+                    placeholder="Filter by name"
                     sx={{ pl: 17 }}
                   />
                   </Grid>
@@ -129,16 +129,18 @@ const HomePageCustomer = () => {
                         </TableCell>
                         <TableCell align="left">Company name</TableCell>
                         <TableCell align="left">Address from&nbsp;</TableCell>
-                        <TableCell align="left">Time&nbsp;</TableCell>
                         <TableCell align="left">Address to&nbsp;</TableCell>
-                        <TableCell align="left">Order file&nbsp;</TableCell>
+                        <TableCell align="left">Time from&nbsp;</TableCell>
+                        <TableCell align="left">Time to&nbsp;</TableCell>
+                        <TableCell align="left">Phone</TableCell>
                         <TableCell align="left">Price</TableCell>
+                        <TableCell align="left">Weight</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
                       {currItems.map((item, index) => (
                         <TableRow
-                          key={item.project_id}
+                          key={item.company_name}
                           sx={{
                             "&:last-child td, &:last-child th": { border: 0 },
                           }}
@@ -149,56 +151,63 @@ const HomePageCustomer = () => {
                             align="left"
                             width="70"
                           >
-                            <Avatar sx={{ bgcolor: "#193639" }}>
-                              {item.project_name.charAt(0)}
-                            </Avatar>
+                           
                           </TableCell>
                           <TableCell align="left">
-                            <Breadcrumbs
-                              aria-label="breadcrumb"
-                              onClick={() => {
-                                navigate(`/orders/${item.project_id}/${userId}`);
-                              }}
-                            >
-                              <MuiLink
-                                underline="hover"
-                                color="inherit"
-                                fontSize={14}
-                              >
-                                {item.creator}
-                              </MuiLink>
-                              <MuiLink underline="hover" color="text.primary">
-                                <Typography fontSize={14}>
-                                  {item.project_name}
-                                </Typography>
-                              </MuiLink>
-                            </Breadcrumbs>
+                            <MuiLink underline="hover" color="text.primary">
+                              <Typography fontSize={14}>
+                                {item.company_name}
+                              </Typography>
+                            </MuiLink>
                           </TableCell>
                           <TableCell align="left">
-                            {item.project_status === true ? (
-                              <Chip
-                                label="working"
-                                color="success"
-                                variant="outlined"
-                                icon={<CheckCircleIcon />}
-                              />
-                            ) : (
-                              <Chip
-                                label="stopped"
-                                color="error"
-                                variant="outlined"
-                                icon={<DoDisturbOnIcon color="error" />}
-                              />
-                            )}
+                            <MuiLink underline="hover" color="text.primary">
+                              <Typography fontSize={14}>
+                                {item.addres_from}
+                              </Typography>
+                            </MuiLink>
                           </TableCell>
                           <TableCell align="left">
-                            <Chip
-                              label={item.project_platform}
-                              variant="filled"
-                            />
+                            <MuiLink underline="hover" color="text.primary">
+                              <Typography fontSize={14}>
+                                {item.address_to}
+                              </Typography>
+                            </MuiLink>
                           </TableCell>
                           <TableCell align="left">
-                            {item.last_updated}
+                            <MuiLink underline="hover" color="text.primary">
+                              <Typography fontSize={14}>
+                                {item.time_from}
+                              </Typography>
+                            </MuiLink>
+                          </TableCell>
+                          <TableCell align="left">
+                            <MuiLink underline="hover" color="text.primary">
+                              <Typography fontSize={14}>
+                                {item.time_to}
+                              </Typography>
+                            </MuiLink>
+                          </TableCell>
+                          <TableCell align="left">
+                            <MuiLink underline="hover" color="text.primary">
+                              <Typography fontSize={14}>
+                                {item.phone}
+                              </Typography>
+                            </MuiLink>
+                          </TableCell>
+                          <TableCell align="left">
+                            <MuiLink underline="hover" color="text.primary">
+                              <Typography fontSize={14}>
+                                {item.price}
+                              </Typography>
+                            </MuiLink>
+                          </TableCell>
+                          <TableCell align="left">
+                            <MuiLink underline="hover" color="text.primary">
+                              <Typography fontSize={14}>
+                                {item.weight}
+                              </Typography>
+                            </MuiLink>
                           </TableCell>
                         </TableRow>
                       ))}

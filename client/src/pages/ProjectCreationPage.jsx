@@ -32,6 +32,11 @@ import api from "../components/auth/api";
 const ProjectCreationPage = () => {
   const { userId } = useParams();
   const [result, setResult] = useState(null);
+  const [price, setPrice] = useState(null);
+  const [driver, setDriver] = useState(null);
+  const [order, setOrder] = useState(null);
+  const [weight, setWeight] = useState(null);
+  const [time_to, setTime_To] = useState(null);
   const [warning, setWarning] = useState(null);
   const [value, setValue] = React.useState("1");
   const [phone, setPhone] = React.useState("");
@@ -40,7 +45,14 @@ const ProjectCreationPage = () => {
   const [addressTo, setAddressTo] = React.useState("");
   const [addressFrom, setAddressFrom] = React.useState("");
   const [file, setFile] = React.useState();
-  const navigate = useNavigate();
+
+
+  // let price;
+  // let driver;
+  // let order;
+  // let weight;
+  // let time_to;
+  let navigate = useNavigate();
 
   const handleCreateButton = async (e) => {
 
@@ -53,15 +65,57 @@ const ProjectCreationPage = () => {
     formData.append('phone', phone);
     formData.append('user_Id', userId);
     api.post(`/orders/${userId}`, formData).then((response) => {
-      if (response.status === 203) {
-        setWarning("Incorrect format of time. Please, read rules.");
+      if (response.status === 204) {
+        setWarning("Incorrect format of time or address Please, read rules.");
       }
       if (response.status === 201) {
-        setWarning("All is okay")
+        setPrice(response['data']['price'])
+        setDriver(response['data']['driver'])
+        setOrder(response['data']['order'])
+        setWeight(response['data']['weight'])
+        setTime_To(response['data']['time_to'])
+        setWarning("Price: " + response['data']['price'])
       }
       if (response.status === 202) {
-        setWarning("Incorrect address")
+        setWarning("No available drivers")
       }
+      if (response.status === 203) {
+        setWarning("No timetable for such time")
+      }
+    });
+    // navigate(`/ord/${userId}`);
+  };
+
+  const handleConfirmButtom = async (e) => {
+
+    const formData1 = new FormData();
+    console.log(price, " ", driver, " ", order, " ", weight, " ", time_to)
+    formData1.append('company_name', companyName);
+    formData1.append('addres_from', addressFrom);
+    formData1.append('time', time);
+    formData1.append('address_to', addressTo);
+    formData1.append('file', file, file['name']);
+    formData1.append('phone', phone);
+    formData1.append('user_Id', userId);
+    formData1.append('price', price)
+    formData1.append('driver', driver)
+    formData1.append('order', order)
+    formData1.append('weight', weight)
+    formData1.append('time_to', time_to)
+    api.post(`/sendorder/${userId}`, formData1).then((response) => {
+      if (response.status === 201) {
+        setWarning("Order is created")
+      }
+      // if (response.status === 201) {
+      //   price = response['data']['price']
+      //   setWarning("Price: " + response['data']['price'])
+      // }
+      if (response.status === 202) {
+        setWarning("Try again")
+      }
+      // if (response.status === 203) {
+      //   setWarning("No timetable for such time")
+      // }
     });
     // navigate(`/ord/${userId}`);
   };
@@ -268,7 +322,7 @@ const ProjectCreationPage = () => {
                   {warning && <p style={{ color: "red" }}>{warning}</p>}
                   <Grid item>
                     <Button
-                      sx={{ m: 0.5, textTransform: "none",  backgroundColor: "#21b6ae", color: "#fff" }}
+                      sx={{ m: 0.5, textTransform: "none", backgroundColor: "#21b6ae", color: "#fff" }}
                       onClick={() => navigate(`/homepage/customer/${userId}`)}
                       variant="outlined"
                     >
@@ -290,6 +344,22 @@ const ProjectCreationPage = () => {
                       disableElevation
                     >
                       Create
+                    </Button>
+                  </Grid> <Grid item>
+                    <Button
+                      sx={{
+                        width: 85,
+                        maxWidth: 120,
+                        minWidth: 40,
+                        m: 0.5,
+                        textTransform: "none",
+                        backgroundColor: "#21b6ae"
+                      }}
+                      onClick={() => handleConfirmButtom("")}
+                      variant="contained"
+                      disableElevation
+                    >
+                      Confirm
                     </Button>
                   </Grid>
                 </Grid>
