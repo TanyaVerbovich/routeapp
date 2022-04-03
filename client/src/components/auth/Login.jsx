@@ -45,6 +45,9 @@ const Login = ({ }) => {
             if (resp.data['role'] == "customer") {
               navigate(`/homepage/customer/${userId}`)
             }
+            if (resp.data['role'] == "driver") {
+              navigate(`/homepage/driver/${userId}`)
+            }
             if (resp.data['role'] == "admin") {
               navigate(`/homepage/admin/${userId}`)
             }

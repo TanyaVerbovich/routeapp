@@ -11,6 +11,8 @@ import ProjectCreationPage from './pages/ProjectCreationPage';
 import EditTimetable from './pages/EditTimetable';
 import CreateDriver from './pages/CreateDriver';
 import HomePageAdmin from './pages/HomePageAdmin';
+import HomePageDriver from './pages/HomePageDriver';
+import MapPage from './pages/MapPage';
 
 
 function App() {
@@ -26,6 +28,8 @@ function App() {
         <Route exact path='/homepage/admin/:userId' element={<HomePageAdmin/>}/>
         <Route exact path='/edit/timetable/:userId/:driver_id' element={<EditTimetable/>}/>
         <Route exact path='/homepage/customer/:userId' element={<HomePageCustomer/>}/>
+        <Route exact path='/homepage/driver/:userId' element={<HomePageDriver/>}/>
+        <Route exact path='/map/:place11/:place12/:place21/:place22' element={<MapPage/>}/>
         <Route exact path='/not-found' element={<NotFoundPage/>}/>
       </Routes>
     </div>

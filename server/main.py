@@ -11,6 +11,7 @@ import re
 import datetime
 from datetime import timedelta
 from geopy.geocoders import Nominatim
+from geopy import distance
 import json
 import hashlib
 import math
@@ -80,6 +81,54 @@ def get_ords_current_user(user_id):
             if order['user_id'] == user_id:
                 ls.append(order)
         return jsonify({'orders': ls}), 201
+
+
+@app.route('/drivers/<string:user_id>', methods=['GET', 'POST'])
+def get_drivers_orders(user_id):
+    query_body = {
+    "query": {
+        "match": {
+            "id": user_id
+        }
+    }
+    }
+    res_user = es.search(index="users", body=query_body)
+    print(res_user)
+    user_name = res_user["hits"]["hits"][0]["_source"]["userName"]
+    query_body = {
+    "query": {
+        "match": {
+            "userName": user_name
+        }
+    }
+    }
+    res_user = es.search(index="drivers", body=query_body)
+    userId = res_user["hits"]["hits"][0]["_id"]
+    query_body = {
+    "query": {
+        "match": {
+            "driver_id": userId
+        }
+    }
+    }
+    res = es.search(index="order_driver", body=query_body)
+    ls = []
+    order = {}
+    number_values = res["hits"]["total"]["value"]
+    print(number_values)
+    if len(res["hits"]["hits"]):
+        for i in range(number_values):
+            order = res["hits"]["hits"][i]['_source']["order_id"]
+            ls.append(order)
+        print(ls)
+    lss = []
+    ordd = {}
+    for i in ls:
+        res = es.get(index="orders", id=i)
+        ordd = res['_source']
+        lss.append(ordd)
+        print(lss)
+        return jsonify({'orders': lss}), 201
 
 
 
@@ -410,7 +459,8 @@ def add_order(user_id):
                 }
                 res_dr = es.search(index="drivers", body=query_driver)
                 bensin = res_dr['hits']['hits'][0]['_source']['fuelConsumption']*distance/100
-                return jsonify({'price': get_price(weigth_of_order, bensin, distance), 'driver': driver_for_order, 'order': dict_order, 'weight': weigth_of_order, 'time_to': conv_time}), 201
+                print( "6666", get_coords(new_order['address_from'], new_order['address_to'])[0][1],  get_coords(new_order['address_from'], new_order['address_to'])[1][0])
+                return jsonify({'price': round(get_price(weigth_of_order, bensin, distance), 2), 'driver': driver_for_order, 'order': dict_order, 'weight': weigth_of_order, 'time_to': conv_time, 'place11': get_coords(new_order['address_from'], new_order['address_to'])[0][0], 'place12': get_coords(new_order['address_from'], new_order['address_to'])[0][1], 'place21': get_coords(new_order['address_from'], new_order['address_to'])[1][0], 'place22': get_coords(new_order['address_from'], new_order['address_to'])[1][1]}), 201
             else:
                 # print("sorry no available drivers")
                 return jsonify({'user_id': user_id}), 202
@@ -438,9 +488,12 @@ def send_order(user_id):
             'time_to': request.form.get('time_to'),
             'price': request.form.get('price'),
             'weight' : request.form.get('weight'),
-            'order': request.form.get('order')
+            'order': request.form.get('order'),
+            'place11': request.form.get('place11'),
+            'place12': request.form.get('place12'),
+            'place21': request.form.get('place21'),
+            'place22': request.form.get('place22')
     }   
-    print(request.form.get('weight'))
     if request.form.get('price') == 'undefined':
         return jsonify({'ord': orders_obj}), 202
     else:
@@ -449,19 +502,16 @@ def send_order(user_id):
                     "query": {
                         "bool": {
                             "must": [
-                        {"match": {
-                            "user_id" : request.form.get('user_Id')}},
-                        {"match": {    'company_name': request.form.get('company_name')}},
-                        {"match": {   'addres_from': request.form.get('addres_from')}},
-                        {"match": {       'time_from': request.form.get('time')}}, 
-                        {"match": {       'address_to': request.form.get('address_to')}},
-                        {"match": {       'phone': request.form.get('phone')}},
-                        
-                            ]
+                        {"match": {  'company_name': request.form.get('company_name')}},
+                        {"match": {  'addres_from': request.form.get('addres_from')}},
+                        {"match": {   'address_to': request.form.get('address_to')}}
+                                ]
                         }
                     }
-                    }
+                }
+        print(ord_query)
         res_ord = es.search(index="orders", body=ord_query)
+        print(res_ord)
         order_id = res_ord['hits']['hits'][0]['_id']
         print(order_id)
         driver_query ={
@@ -496,8 +546,20 @@ def get_distance(place1, place2):
     location = geolocator.geocode(place2)
     dolgota2 = location.latitude
     shirota2 = location.longitude
-    distance = math.acos(math.sin(shirota1)*math.sin(shirota2)+math.cos(shirota1)*math.cos(shirota2)*math.cos(dolgota1-dolgota2))*math.pi/180*6378.137
-    return distance
+    plac1 = (dolgota1, shirota1)
+    plac2 = (dolgota2, shirota2)
+    # distance = math.acos(math.sin(shirota1)*math.sin(shirota2)+math.cos(shirota1)*math.cos(shirota2)*math.cos(dolgota1-dolgota2))*math.pi/180*6378.137
+    return distance.distance(plac1, plac2).km
+
+def get_coords(place1, place2):
+    geolocator = Nominatim(user_agent="http")
+    location = geolocator.geocode(place1)
+    (dolgota1, shirota1) = location.latitude, location.longitude
+    location = geolocator.geocode(place2)
+    (dolgota2, shirota2) = location.latitude, location.longitude
+    plac1 = (dolgota1, shirota1)
+    plac2 = (dolgota2, shirota2)
+    return plac1, plac2
 
 
 def read_csv(distance, file):
@@ -566,7 +628,6 @@ def get_price(weigth_of_order, bensin, distance):
     elif (weigth_of_order >100) and (weigth_of_order < 200):
         coef = 15
     money_rider = distance/70 * 2 *10
-    print(money_for_road, " ", weigth_of_order," ", coef, " ",money_rider)
     return 1.5*(money_for_road+weigth_of_order+coef+money_rider)
     
 

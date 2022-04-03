@@ -38,6 +38,10 @@ const ProjectCreationPage = () => {
   const [weight, setWeight] = useState(null);
   const [time_to, setTime_To] = useState(null);
   const [warning, setWarning] = useState(null);
+  const [place11, setPlace11] = useState(null);
+  const [place12, setPlace12] = useState(null);
+  const [place21, setPlace21] = useState(null);
+  const [place22, setPlace22] = useState(null);
   const [value, setValue] = React.useState("1");
   const [phone, setPhone] = React.useState("");
   const [time, setTime] = React.useState("");
@@ -47,11 +51,6 @@ const ProjectCreationPage = () => {
   const [file, setFile] = React.useState();
 
 
-  // let price;
-  // let driver;
-  // let order;
-  // let weight;
-  // let time_to;
   let navigate = useNavigate();
 
   const handleCreateButton = async (e) => {
@@ -74,6 +73,11 @@ const ProjectCreationPage = () => {
         setOrder(response['data']['order'])
         setWeight(response['data']['weight'])
         setTime_To(response['data']['time_to'])
+        setPlace11(response['data']['place11'])
+        setPlace12(response['data']['place12'])
+        setPlace21(response['data']['place21'])
+        setPlace22(response['data']['place22'])
+        console.log(response['data']['place11'], " ", response['data']['place21'])
         setWarning("Price: " + response['data']['price'])
       }
       if (response.status === 202) {
@@ -102,6 +106,10 @@ const ProjectCreationPage = () => {
     formData1.append('order', order)
     formData1.append('weight', weight)
     formData1.append('time_to', time_to)
+    formData1.append('place11', place11)
+    formData1.append('place12', place12)
+    formData1.append('place21', place21)
+    formData1.append('place22', place22)
     api.post(`/sendorder/${userId}`, formData1).then((response) => {
       if (response.status === 201) {
         setWarning("Order is created")
