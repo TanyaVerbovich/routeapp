@@ -207,7 +207,7 @@ const HomePageDriver = () => {
                               backgroundColor: "#21b6ae",
                               padding: "9px 18px",
                               fontSize: "12px",
-                              marginTop: 55
+                              marginTop: 35
                             }}
                             variant="contained"
                             onClick={() => handleMap(item.place11,item.place21, item.place21, item.place22)}

@@ -1,18 +1,17 @@
-import { Container } from "@mui/material";
-import React, { useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import {Map, GoogleApiWrapper} from "google-maps-react"
+import React, { useState, useEffect } from "react";
 
-const MapPage = () => {
-  const navigate = useNavigate();
-  const { place11, place12, place21, place22 } = useParams();
+import { useParams } from "react-router-dom";
 
 
+import GoogleMap from '../components/GoogleMap';
+
+function MapPage() {
   return (
-    <div>
-     {place11}
+    <div className="App">
+      <GoogleMap />
     </div>
   );
-};
+}
 
 export default MapPage;
+
