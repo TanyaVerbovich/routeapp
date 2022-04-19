@@ -26,14 +26,12 @@ import { useNavigate, useParams } from "react-router-dom";
 import AppsIcon from "@mui/icons-material/Apps";
 import api from "../components/auth/api";
 
-import DoDisturbOnIcon from "@mui/icons-material/DoDisturbOn";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-
 const HomePageDriver = () => {
   
   const { userId, place11, place12, place21, place22 } = useParams();
   const navigate = useNavigate();
   const [currItems, setCurrItems] = useState([]);
+  const [filter, setFilter] = useState("");
   const [projectsTab, setProjectsTab] = useState("1");
 
   const handleProjectsTabIndexChange = (e, newValue) => {
@@ -41,8 +39,26 @@ const HomePageDriver = () => {
   };
 
   function handleMap(place11, place12, place21,place22){
-    navigate(`/map/${place11}/${place12}/${place21}/${place22}`);
+    navigate(`/map/${place11}/${place12}/${place21}/${place22}`)
   }
+
+  const handleFilt = (e) => {
+    setFilter(e.target.value);
+  };
+
+  const handleKeypress = e => {
+    //it triggers by pressing the enter key
+  if (e.key === "Enter") {
+    const requestOptions = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ filter: filter })
+  };
+  api.post(`/filterdriver/${userId}`, requestOptions)
+      .then(response => setCurrItems(response.data.filtered_customer))
+      
+  }
+};
 
 
   useEffect(() => {
@@ -106,6 +122,10 @@ const HomePageDriver = () => {
                     size="small"
                     placeholder="Filter by name"
                     sx={{ pl: 17 }}
+                    fullWidth={true}
+                    value={filter}
+                    onKeyPress={handleKeypress}
+                    onChange={(e) => handleFilt(e)}
                   />
                   </Grid>
               </Box>
@@ -132,7 +152,7 @@ const HomePageDriver = () => {
                     <TableBody>
                       {currItems.map((item, index) => (
                         <TableRow
-                          key={item.company_name}
+                          key={item.price}
                           sx={{
                             "&:last-child td, &:last-child th": { border: 0 },
                           }}
@@ -207,10 +227,10 @@ const HomePageDriver = () => {
                               backgroundColor: "#21b6ae",
                               padding: "9px 18px",
                               fontSize: "12px",
-                              marginTop: 35
+                              marginTop: 15
                             }}
                             variant="contained"
-                            onClick={() => handleMap(item.place11,item.place21, item.place21, item.place22)}
+                            onClick={() => handleMap(item.place11,item.place12, item.place21, item.place22)}
                           >
                             Show
                           </Button>

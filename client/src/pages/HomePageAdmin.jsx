@@ -27,6 +27,7 @@ import AppsIcon from "@mui/icons-material/Apps";
 import api from "../components/auth/api";
 
 const HomePageAdmin = () => {
+  const usr = "https://cdn4.iconfinder.com/data/icons/ionicons/512/icon-arrow-down-b-16.png";
   const navigate = useNavigate();
   const { userId, driver_id } = useParams();
   const [username, setUsername] = useState(null);
@@ -54,7 +55,6 @@ const HomePageAdmin = () => {
   function handleAddDriver(driver_id) {
     navigate(`/create/driver/${userId}/${driver_id}`);
   }
-
 
   function getUserName() {
     api.post(`/username/${userId}`).then((response) => {
@@ -94,7 +94,7 @@ const HomePageAdmin = () => {
 
   useEffect(() => {
     async function fetchProjects() {
-      let response = await api.get(`/ords`);
+      let response = await api.get(`/allorders`);
       response = await response.data.orders;
       setCurrOrders(response);
       console.log(response);
@@ -204,14 +204,14 @@ const HomePageAdmin = () => {
                   />
                 </TabList>
 
-                <Grid item xs={4} sx={{ display: "inherit" }}>
+                {/* <Grid item xs={4} sx={{ display: "inherit" }}>
                   <TextField
                     variant="outlined"
                     size="small"
                     placeholder="Filter by name"
                     sx={{ pl: 17 }}
                   />
-                </Grid>
+                </Grid> */}
               </Box>
 
               <TabPanel value="1">
@@ -222,7 +222,11 @@ const HomePageAdmin = () => {
                         <TableCell align="left">
                           <AppsIcon sx={{ ml: 1, mt: 1 }} />
                         </TableCell>
-                        <TableCell align="left">Username</TableCell>
+                        <TableCell align="left">Username 
+                        {/* <img className="arrow" 
+                        onClick={sortDesc}          
+                        src={usr} /> */}
+                        </TableCell>
                         <TableCell align="left">Mail&nbsp;</TableCell>
                         <TableCell align="left">Role&nbsp;</TableCell>
                       </TableRow>

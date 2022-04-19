@@ -1,3 +1,4 @@
+# from crypt import methods
 from dis import dis
 from http.client import BAD_REQUEST, CREATED, NO_CONTENT, OK
 from urllib import response
@@ -83,6 +84,111 @@ def get_ords_current_user(user_id):
         return jsonify({'orders': ls}), 201
 
 
+@app.route('/filtercustomer/<string:user_id>', methods=['GET', 'POST'])
+def filtercustomer(user_id):
+    company_name = json.loads(json.loads(request.data.decode("utf-8"))['body'])['filter']
+    if company_name != "":
+        print(company_name)
+        print(company_name)
+        query_body = {
+        # "query": {
+        #     "match": {
+        #         "company_name": company_name
+        #     }
+        # }
+        # }
+         # ord_query ={
+                    "query": {
+                        "bool": {
+                            "must": [
+                        {"match": {  'company_name': company_name}},
+                        {"match": {  'user_id': user_id}},
+                        # {"match": {   'address_to': request.form.get('address_to')}}
+                                ]
+                        }
+                    }
+                }
+        res = es.search(index="orders", body=query_body)
+        ls = []
+        order = {}
+        number_values = res["hits"]["total"]["value"]
+        if len(res["hits"]["hits"]):
+            for i in range(number_values):
+                order = res["hits"]["hits"][i]['_source']
+                ls.append(order)
+            print(ls)
+        return jsonify({'filtered_customer': ls}), 201
+    else:
+        ls = []
+        order = {}
+        res = requests.post("http://127.0.0.1:9200/orders/_search?pretty")
+        print(res.json())
+        number_values = res.json()["hits"]["total"]["value"]
+        print(number_values)
+        if len(res.json()["hits"]["hits"]):
+            for i in range(number_values):
+                order = res.json()["hits"]["hits"][i]['_source']
+                print(i)
+                ls.append(order)
+        return jsonify({'filtered_customer': ls}), 201
+
+
+@app.route('/filterdriver/<string:user_id>', methods=['GET', 'POST'])
+def filterdriver(user_id):
+    query_body = {
+    "query": {
+            "match": {
+                "id": user_id
+            }
+        }
+        }
+    res = es.search(index="users", body=query_body)  
+    user_name = res["hits"]["hits"][0]["_source"]["userName"]  
+    company_name = json.loads(json.loads(request.data.decode("utf-8"))['body'])['filter']
+    if company_name != "":
+        query_body = {
+                    "query": {
+                        "bool": {
+                            "must": [
+                        {"match": {  'company_name': company_name}},
+                        {"match": {  'driver': user_name}},
+                        # {"match": {   'address_to': request.form.get('address_to')}}
+                                ]
+                        }
+                    }
+                }
+        res = es.search(index="orders", body=query_body)
+        ls = []
+        order = {}
+        number_values = res["hits"]["total"]["value"]
+        if len(res["hits"]["hits"]):
+            for i in range(number_values):
+                order = res["hits"]["hits"][i]['_source']
+                ls.append(order)
+            print(ls)
+        return jsonify({'filtered_customer': ls}), 201
+    else:
+        query_body = {
+            "query": {
+                "match": {
+                "driver": user_name
+            }
+        }
+        }
+        res = es.search(index="orders", body=query_body)
+        print(user_name)
+        print(res)
+        ls = []
+        order = {}
+        number_values = res["hits"]["total"]["value"]
+        if len(res["hits"]["hits"]):
+            for i in range(number_values):
+                order = res["hits"]["hits"][i]['_source']
+                ls.append(order)
+            print(ls)
+        return jsonify({'filtered_customer': ls}), 201
+
+
 @app.route('/drivers/<string:user_id>', methods=['GET', 'POST'])
 def get_drivers_orders(user_id):
     query_body = {
@@ -98,54 +204,71 @@ def get_drivers_orders(user_id):
     query_body = {
     "query": {
         "match": {
-            "userName": user_name
+            "driver": user_name
         }
     }
     }
-    res_user = es.search(index="drivers", body=query_body)
-    userId = res_user["hits"]["hits"][0]["_id"]
-    query_body = {
-    "query": {
-        "match": {
-            "driver_id": userId
-        }
-    }
-    }
-    res = es.search(index="order_driver", body=query_body)
+    res = es.search(index="orders", body=query_body)
+    print(res)
     ls = []
     order = {}
     number_values = res["hits"]["total"]["value"]
-    print(number_values)
     if len(res["hits"]["hits"]):
         for i in range(number_values):
-            order = res["hits"]["hits"][i]['_source']["order_id"]
+            order = res["hits"]["hits"][i]['_source']
             ls.append(order)
         print(ls)
-    lss = []
-    ordd = {}
-    for i in ls:
-        res = es.get(index="orders", id=i)
-        ordd = res['_source']
-        lss.append(ordd)
-        print(lss)
-        return jsonify({'orders': lss}), 201
+    return jsonify({'orders': ls}), 201
+    # query_body = {
+    # "query": {
+    #     "match": {
+    #         "userName": user_name
+    #     }
+    # }
+    # }
+    # res_user = es.search(index="drivers", body=query_body)
+    # userId = res_user["hits"]["hits"][0]["_id"]
+    # query_body = {
+    # "query": {
+    #     "match": {
+    #         "driver_id": userId
+    #     }
+    # }
+    # }
+    # res = es.search(index="order_driver", body=query_body)
+    # ls = []
+    # order = {}
+    # number_values = res["hits"]["total"]["value"]
+    # print(number_values)
+    # if len(res["hits"]["hits"]):
+    #     for i in range(number_values):
+    #         order = res["hits"]["hits"][i]['_source']["order_id"]
+    #         ls.append(order)
+    #     print(ls)
+    # lss = []
+    # ordd = {}
+    # for i in ls:
+    #     res = es.get(index="orders", id=i)
+    #     ordd = res['_source']
+    #     lss.append(ordd)
+    #     print(lss)
+    #     return jsonify({'orders': lss}), 201
 
 
 
-@app.route('/ord/', methods=['GET', 'POST'])
+@app.route('/allorders', methods=['GET', 'POST'])
 def get_all_ords():
     ls = []
     order = {}
     res = requests.post("http://127.0.0.1:9200/orders/_search?pretty")
-    print(res.json())
     number_values = res.json()["hits"]["total"]["value"]
     print(number_values)
     if len(res.json()["hits"]["hits"]):
         for i in range(number_values):
             order = res.json()["hits"]["hits"][i]['_source']
-            print(i)
             ls.append(order)
-        return jsonify({'ord_driver': ls}), 201
+        print(ls)
+        return jsonify({'orders': ls}), 201
 
 
 @app.route('/many', methods=['GET', 'POST'])
@@ -392,6 +515,7 @@ def add_order(user_id):
                 }
             }
             }
+            print(time_begin)
             res1 = es.search(index="timetable", body=query_body1, request_timeout=300)
             for item in range(res1['hits']['total']['value']):
                 list1.append(res1['hits']['hits'][item]['_source']['userName'])
@@ -405,6 +529,7 @@ def add_order(user_id):
             #     }
             # }
             # }
+            print(conv_time.time().strftime('%H:%M'))
             times = []
             names = []
             res = requests.post("http://127.0.0.1:9200/timetable/_search?pretty")
@@ -436,31 +561,48 @@ def add_order(user_id):
             print(list3)
             #suitable drivers
             list_timet = list(set(list1) & set(list2))
+            timefrom=[]
+            timeto=[]
             if len(list1) and len(list2):
-                for item in list3:
-                    if item in list_timet:
-                        list_timet.remove(item)
-                name_driver = random.choice(list_timet)
-                query_body = {
+                while True:
+                    flag=False
+                    for item in list3:
+                        if item in list_timet:
+                            list_timet.remove(item)
+                    name_driver = random.choice(list_timet)
+
+                    query_body = {
+                    "query": {
+                        "match": {
+                            "driver": name_driver
+                        }
+                    }
+                    }
+                    print(name_driver)
+                    res_user = es.search(index="orders", body=query_body)
+                    if res_user['hits']['total']['value'] == 0:
+                        break
+                    timefrom.append(res_user['hits']['hits'][0]['_source']["time_from"])
+                    timeto.append(res_user['hits']['hits'][0]['_source']["time_to"])
+                    for i in range(len(timefrom)):
+                        if (time_in_range(datetime.datetime.strptime(timefrom[i], '%d/%m/%Y %H:%M'), datetime.datetime.strptime(timeto[i], '%d/%m/%Y %H:%M'), time_begin, conv_time)):
+                            flag=True
+                            break
+                    if flag:
+                        break  
+                print(name_driver)
+                query_driver ={
                 "query": {
                     "match": {
                         "userName": name_driver
                     }
                 }
                 }
-                res_user = es.search(index="drivers", body=query_body)
-                driver_for_order = res_user['hits']['hits'][0]['_source']["userName"]
-                query_driver ={
-                "query": {
-                    "match": {
-                        "userName": driver_for_order
-                    }
-                }
-                }
+                print(query_driver)
                 res_dr = es.search(index="drivers", body=query_driver)
                 bensin = res_dr['hits']['hits'][0]['_source']['fuelConsumption']*distance/100
-                print( "6666", get_coords(new_order['address_from'], new_order['address_to'])[0][1],  get_coords(new_order['address_from'], new_order['address_to'])[1][0])
-                return jsonify({'price': round(get_price(weigth_of_order, bensin, distance), 2), 'driver': driver_for_order, 'order': dict_order, 'weight': weigth_of_order, 'time_to': conv_time, 'place11': get_coords(new_order['address_from'], new_order['address_to'])[0][0], 'place12': get_coords(new_order['address_from'], new_order['address_to'])[0][1], 'place21': get_coords(new_order['address_from'], new_order['address_to'])[1][0], 'place22': get_coords(new_order['address_from'], new_order['address_to'])[1][1]}), 201
+                print("***", bensin)
+                return jsonify({'price': round(get_price(weigth_of_order, bensin, distance), 2), 'driver': name_driver, 'order': dict_order, 'weight': weigth_of_order, 'time_from': time_begin.strftime('%d/%m/%Y %H:%M'), 'place11': get_coords(new_order['address_from'], new_order['address_to'])[0][0], 'place12': get_coords(new_order['address_from'], new_order['address_to'])[0][1], 'place21': get_coords(new_order['address_from'], new_order['address_to'])[1][0], 'place22': get_coords(new_order['address_from'], new_order['address_to'])[1][1]}), 201
             else:
                 # print("sorry no available drivers")
                 return jsonify({'user_id': user_id}), 202
@@ -468,8 +610,10 @@ def add_order(user_id):
             # print("sorry there is no timetable for such time")
             return jsonify({'user_id': user_id}), 203
     except ValueError:
+        print("val")
         return jsonify({'user_id': user_id}), 204
     except AttributeError:
+        print("atr")
         return jsonify({'user_id': user_id}), 204
 
 
@@ -481,34 +625,43 @@ def send_order(user_id):
             "user_id" : request.form.get('user_Id'),
             'company_name': request.form.get('company_name'),
             'addres_from': request.form.get('addres_from'),
-            'time_from': request.form.get('time'), 
+            'time_from': request.form.get('time_from'), 
             'address_to': request.form.get('address_to'),
             'phone': request.form.get('phone'),
             'file': os.path.join(os.path.join(app.config['FILE_UPLOADS'], user_id+"_"+data_from_file.filename)),
-            'time_to': request.form.get('time_to'),
+            'time_to': request.form.get('time'),
             'price': request.form.get('price'),
             'weight' : request.form.get('weight'),
             'order': request.form.get('order'),
+            'driver': request.form.get('driver'),
             'place11': request.form.get('place11'),
             'place12': request.form.get('place12'),
             'place21': request.form.get('place21'),
             'place22': request.form.get('place22')
     }   
+    print(orders_obj)
     if request.form.get('price') == 'undefined':
         return jsonify({'ord': orders_obj}), 202
     else:
         result = es.index(index='orders', body=orders_obj, request_timeout=30)
+        # ord_query ={
+        #             "query": {
+        #                 "bool": {
+        #                     "must": [
+        #                 {"match": {  'company_name': request.form.get('company_name')}},
+        #                 # {"match": {  'phone': request.form.get('phone')}}
+        #                 # {"match": {   'address_to': request.form.get('address_to')}}
+        #                         ]
+        #                 }
+        #             }
+        #         }
         ord_query ={
-                    "query": {
-                        "bool": {
-                            "must": [
-                        {"match": {  'company_name': request.form.get('company_name')}},
-                        {"match": {  'addres_from': request.form.get('addres_from')}},
-                        {"match": {   'address_to': request.form.get('address_to')}}
-                                ]
-                        }
+                "query": {
+                    "match": {
+                        "company_name": request.form.get('company_name')
                     }
                 }
+                }    
         print(ord_query)
         res_ord = es.search(index="orders", body=ord_query)
         print(res_ord)
@@ -536,6 +689,13 @@ def hash_password(password):
     hex_object = hashlib.sha1(encoded_password)
     hex_password = hex_object.hexdigest()
     return hex_password
+
+
+def time_in_range(start, end, timefrom, timeto):
+    if (start <= timefrom <= end) or  (start <= timeto <= end):
+        return False
+    if (start <= timefrom <= end) != True and  (start <= timeto <= end) != True:
+        return True
 
 
 def get_distance(place1, place2):

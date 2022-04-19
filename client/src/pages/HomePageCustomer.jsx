@@ -33,6 +33,7 @@ const HomePageCustomer = () => {
   
   const { userId } = useParams();
   const navigate = useNavigate();
+  const [filter, setFilter] = useState("");
   const [currItems, setCurrItems] = useState([]);
   const [projectsTab, setProjectsTab] = useState("1");
 
@@ -40,9 +41,27 @@ const HomePageCustomer = () => {
     setProjectsTab(newValue);
   };
 
+  const handleFilt = (e) => {
+    setFilter(e.target.value);
+  };
+
   function handleCreation() {
     navigate(`/orders/create/${userId}`);
   }
+
+  const handleKeypress = e => {
+    //it triggers by pressing the enter key
+  if (e.key === "Enter") {
+    const requestOptions = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ filter: filter })
+  };
+  api.post(`/filtercustomer/${userId}`, requestOptions)
+      .then(response => setCurrItems(response.data.filtered_customer))
+      
+  }
+};
 
   useEffect(() => {
     async function fetchProjects() {
@@ -115,6 +134,11 @@ const HomePageCustomer = () => {
                     size="small"
                     placeholder="Filter by name"
                     sx={{ pl: 17 }}
+                    fullWidth={true}
+                    value={filter}
+                    onKeyPress={handleKeypress}
+                    onChange={(e) => handleFilt(e)}
+
                   />
                   </Grid>
               </Box>
@@ -140,7 +164,7 @@ const HomePageCustomer = () => {
                     <TableBody>
                       {currItems.map((item, index) => (
                         <TableRow
-                          key={item.company_name}
+                          key={item.price}
                           sx={{
                             "&:last-child td, &:last-child th": { border: 0 },
                           }}
