@@ -46,7 +46,7 @@ const HomePageCustomer = () => {
   };
 
   function handleCreation() {
-    navigate(`/orders/create/${userId}`);
+    navigate(`/chooseoption/${userId}`);
   }
 
   const handleKeypress = e => {
