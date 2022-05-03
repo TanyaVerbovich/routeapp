@@ -28,9 +28,11 @@ import api from "../components/auth/api";
 
 const HomePageDriver = () => {
   
-  const { userId, place11, place12, place21, place22 } = useParams();
+  const { userId, place11, place12, place21, place22, usr } = useParams();
   const navigate = useNavigate();
   const [currItems, setCurrItems] = useState([]);
+  const [currDel, setCurrDel] = useState([]);
+  const [username, setUsername] = useState(null);
   const [filter, setFilter] = useState("");
   const [projectsTab, setProjectsTab] = useState("1");
 
@@ -41,6 +43,12 @@ const HomePageDriver = () => {
   function handleMap(place11, place12, place21,place22){
     navigate(`/map/${place11}/${place12}/${place21}/${place22}`)
   }
+
+  function getUserName() {
+    api.post(`/username/${userId}`).then((response) => {
+      setUsername(response.data['username'])
+    });
+  };
 
   const handleFilt = (e) => {
     setFilter(e.target.value);
@@ -61,6 +69,18 @@ const HomePageDriver = () => {
 };
 
 
+  useEffect(() => {
+    async function fetchProjects() {
+      let usr = username.split(" ")[1].toLowerCase();
+      console.log( `/delivery/${usr}`);
+      let response = await api.get(`/delivery/${usr}`);
+      response = await response.data.delivery;
+      setCurrDel(response);
+    }
+    fetchProjects();
+  }, [usr, navigate]);
+
+  
   useEffect(() => {
     async function fetchProjects() {
       let response = await api.get(`/drivers/${userId}`);
@@ -91,7 +111,9 @@ const HomePageDriver = () => {
               marginTop="2em"
               marginBottom="1em"
             >
-             
+             {getUserName()}
+              {username && <Typography variant="h4" sx={{ ml: 1 }}>Hi, {username}!</Typography>}
+            
             </Grid>
           </Container>
           <Container maxWidth="lg">
@@ -109,10 +131,18 @@ const HomePageDriver = () => {
                   <Tab
                     label={
                       <span style={{ fontSize: 14, textTransform: "none" }}>
-                        All
+                        Orders
                       </span>
                     }
                     value="1"
+                  />
+                   <Tab
+                    label={
+                      <span style={{ fontSize: 14, textTransform: "none" }}>
+                        Delivery
+                      </span>
+                    }
+                    value="2"
                   />
                 </TabList>
 
@@ -175,7 +205,7 @@ const HomePageDriver = () => {
                           <TableCell align="left">
                             <MuiLink underline="hover" color="text.primary">
                               <Typography fontSize={14}>
-                                {item.addres_from}
+                                {item.address_from}
                               </Typography>
                             </MuiLink>
                           </TableCell>
@@ -240,7 +270,95 @@ const HomePageDriver = () => {
                   </Table>
                 </TableContainer>
               </TabPanel>
-              <TabPanel value="2"></TabPanel>
+              <TabPanel value="2">
+              <TableContainer>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell align="left">
+                          <AppsIcon sx={{ ml: 1, mt: 1 }} />
+                        </TableCell>
+                        <TableCell align="left">Company name</TableCell>
+                        <TableCell align="left">Order</TableCell>
+                        <TableCell align="left">Address from&nbsp;</TableCell>
+                        <TableCell align="left">Address to&nbsp;</TableCell>
+                        <TableCell align="left">Phone</TableCell>
+                        <TableCell align="left">Price</TableCell>
+                        <TableCell align="left">Weight</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {currDel.map((item, index) => (
+                        <TableRow
+                          key={item.price}
+                          sx={{
+                            "&:last-child td, &:last-child th": { border: 0 },
+                          }}
+                        >
+                          <TableCell
+                            component="th"
+                            scope="row"
+                            align="left"
+                            width="70"
+                          >
+                           
+                          </TableCell>
+                          <TableCell align="left">
+                            <MuiLink underline="hover" color="text.primary">
+                              <Typography fontSize={14}>
+                                {item.company_name}
+                              </Typography>
+                            </MuiLink>
+                          </TableCell>
+                          <TableCell align="left">
+                            <MuiLink underline="hover" color="text.primary">
+                              <Typography fontSize={14}>
+                                {item.order}
+                              </Typography>
+                            </MuiLink>
+                          </TableCell>
+                          <TableCell align="left">
+                            <MuiLink underline="hover" color="text.primary">
+                              <Typography fontSize={14}>
+                                {item.address_from}
+                              </Typography>
+                            </MuiLink>
+                          </TableCell>
+                          <TableCell align="left">
+                            <MuiLink underline="hover" color="text.primary">
+                              <Typography fontSize={14}>
+                                {item.address_to}
+                              </Typography>
+                            </MuiLink>
+                          </TableCell>
+                          <TableCell align="left">
+                            <MuiLink underline="hover" color="text.primary">
+                              <Typography fontSize={14}>
+                                {item.phone}
+                              </Typography>
+                            </MuiLink>
+                          </TableCell>
+                          <TableCell align="left">
+                            <MuiLink underline="hover" color="text.primary">
+                              <Typography fontSize={14}>
+                                {item.price}
+                              </Typography>
+                            </MuiLink>
+                          </TableCell>
+                          <TableCell align="left">
+                            <MuiLink underline="hover" color="text.primary">
+                              <Typography fontSize={14}>
+                                {item.weight}
+                              </Typography>
+                            </MuiLink>
+                          </TableCell>
+                         
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </TabPanel>
             </TabContext>
           </Container>
         </Container>

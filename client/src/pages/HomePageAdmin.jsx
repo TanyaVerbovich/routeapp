@@ -331,7 +331,7 @@ const HomePageAdmin = () => {
                           <TableCell align="left">
                             <MuiLink underline="hover" color="text.primary">
                               <Typography fontSize={14}>
-                                {ord.addres_from}
+                                {ord.address_from}
                               </Typography>
                             </MuiLink>
                           </TableCell>

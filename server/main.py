@@ -69,6 +69,48 @@ def get_all_users():
         return jsonify({'users': ls}), 201
 
 
+@app.route('/delivery/<string:userName>', methods=['GET', 'POST'])
+def get_info_from_delivery(userName):
+    print(userName)
+    ls = []
+    user = {}
+    res = requests.post("http://127.0.0.1:9200/delivery_" + userName + "/_search?pretty")
+    number_values = res.json()["hits"]["total"]["value"]
+    if len(res.json()["hits"]["hits"]):
+        for i in range(number_values):
+            user = res.json()["hits"]["hits"][i]['_source']
+            user["user_id"] = res.json()["hits"]["hits"][i]['_id']
+            ls.append(user)
+        return jsonify({'delivery': ls}), 201
+
+
+
+@app.route('/deliv/<string:userId>', methods=['GET', 'POST'])
+def get_info_customer_deliveries(userId):
+    ls = []
+    user = {}
+    res = requests.post("http://127.0.0.1:9200/drivers/_search?pretty")
+    number_values = res.json()["hits"]["total"]["value"]
+    if len(res.json()["hits"]["hits"]):
+        for i in range(number_values):
+            user = str(res.json()["hits"]["hits"][i]['_source']['userName']).split(" ")[1].lower()
+            ls.append(user)
+    ps = []
+    user = {}
+    for j in ls:
+        try:
+            res = requests.post("http://127.0.0.1:9200/delivery_" + j + "/_search?pretty")
+            number_values = res.json()["hits"]["total"]["value"]
+            if len(res.json()["hits"]["hits"]):
+                for i in range(number_values):
+                    order = res.json()["hits"]["hits"][i]['_source']
+                    if order['user_Id'] == userId:
+                        ps.append(order)
+        except KeyError:
+            pass
+    return jsonify({'delivery': ps}), 201
+
+
 @app.route('/ords/<string:user_id>', methods=['GET', 'POST'])
 def get_ords_current_user(user_id):
     ls = []
@@ -79,8 +121,14 @@ def get_ords_current_user(user_id):
     if len(res.json()["hits"]["hits"]):
         for i in range(number_values):
             order = res.json()["hits"]["hits"][i]['_source']
-            if order['user_id'] == user_id:
-                ls.append(order)
+            print(order)
+            print(user_id)
+            try:
+                if order['user_id'] == user_id:
+                    ls.append(order)
+            except KeyError:
+                if order['user_Id'] == user_id:
+                    ls.append(order)
         return jsonify({'orders': ls}), 201
 
 
@@ -278,6 +326,8 @@ def delete_driver(driver_phone):
     return _id
 
 
+
+
 @app.route('/edit_timetable/<string:user_id>/<string:driver_id>', methods=['GET', 'POST'])
 def edit_timetable(user_id, driver_id):
     sep_users = dict()
@@ -447,7 +497,7 @@ def login_profile():
 def add_order(user_id):
     new_order = {
       'company_name': request.form.get('company_name'),
-      'address_from': request.form.get('addres_from'),
+      'address_from': request.form.get('address_from'),
       'time': request.form.get('time'),
       'address_to': request.form.get('address_to'),
       'phone': request.form.get('phone'),
@@ -586,7 +636,7 @@ def add_order(user_id):
 def add_normorder(user_id):
     new_order = {
       'company_name': request.form.get('company_name'),
-      'address_from': request.form.get('addres_from'),
+      'address_from': request.form.get('address_from'),
       'address_to': request.form.get('address_to'),
       'phone': request.form.get('phone'),
       'user_Id': user_id
@@ -614,7 +664,7 @@ def add_normorder(user_id):
         addresses_szadi = []
         addresses_speredi = []
         distances = []
-        coords_from_form = convert_coords(request.form.get('addres_from'))
+        coords_from_form = convert_coords(request.form.get('address_from'))
         coords_to_from = convert_coords(request.form.get('address_to'))
         for i in range(len(ls)):
             number_tables = len(ls)
@@ -640,7 +690,7 @@ def add_normorder(user_id):
         if number_tables == errors:
             #for adding the most first record
             for i in range(len(ls)):
-                driver = str(ls[i]).lower()
+                driver = random.choice(ls).lower()
                 for i in range(len(full_driver)):
                     ran = full_driver[i].find(driver[1:])
                     if ran != -1:
@@ -655,13 +705,13 @@ def add_normorder(user_id):
                     }
                 print(query_driver)
                 res_dr = es.search(index="drivers", body=query_driver)
-                distance = get_distance(request.form.get('addres_from'), request.form.get('addres_to'))
+                distance = get_distance(request.form.get('address_from'), request.form.get('addres_to'))
                 bensin = res_dr['hits']['hits'][0]['_source']['fuelConsumption']*distance/100
                 new_order = {
                 'driver': full_name,
                 'order': 1,
                 'company_name': request.form.get('company_name'),
-                'address_from': request.form.get('addres_from'),
+                'address_from': request.form.get('address_from'),
                 'address_to': request.form.get('address_to'),
                 'phone': request.form.get('phone'),
                 'user_Id': user_id,
@@ -676,93 +726,136 @@ def add_normorder(user_id):
                 }
                 result = es.index(index='delivery_'+driver, body=new_order, request_timeout=30)
                 break
-        min_dist = min(distances)
-        print(min_dist)
-        if (min_dist[0]>6):
-            for i in range(len(ls)):
-                driver = str(ls[i]).lower()
-                try:
-                    res = requests.post("http://127.0.0.1:9200/delivery_" + str(ls[i]).lower() + "/_search?pretty")
-                    number_values = res.json()["hits"]["total"]["value"]
-                except KeyError:
-                    for i in range(len(full_driver)):
-                        ran = full_driver[i].find(driver[1:])
-                        if ran != -1:
-                            full_name = full_driver[i]
-                    print(full_name)
-                    new_order = {
-                    'driver': full_name,
-                    'order': 1,
-                    'company_name': request.form.get('company_name'),
-                    'address_from': request.form.get('addres_from'),
-                    'address_to': request.form.get('address_to'),
-                    'phone': request.form.get('phone'),
-                    'user_Id': user_id,
-                    'file': os.path.join(os.path.join(app.config['FILE_UPLOADS'], user_id+"_"+data_from_file.filename)),
-                    'price': round(get_price_normal(weigth_of_order, bensin, distance),2),
-                    'weight' : weigth_of_order,
-                    # 'order': dict_order,
-                    'place11': place11,
-                    'place12': place12,
-                    'place21': place21,
-                    'place22': place22
-                    }
-                    result = es.index(index='delivery_'+driver, body=new_order, request_timeout=30)
-                    break
         else:
-            for i in range(len(full_driver)):
-                ran = full_driver[i].find(min_dist[2][1:])
-                if ran != -1:
-                    full_name = full_driver[i]
-            print(full_name)
-            query_driver ={
-                    "query": {
-                        "match": {
-                            "userName": full_name
+            min_dist = min(distances)
+            print(min_dist)
+            if (min_dist[0]>6):
+                for i in range(len(ls)):
+                    driver = str(ls[i]).lower()
+                    try:
+                        res = requests.post("http://127.0.0.1:9200/delivery_" + str(ls[i]).lower() + "/_search?pretty")
+                        number_values = res.json()["hits"]["total"]["value"]
+                    except KeyError:
+                        for i in range(len(full_driver)):
+                            ran = full_driver[i].find(driver[1:])
+                            if ran != -1:
+                                full_name = full_driver[i]
+                        print(full_name)
+                        distance = get_distance(request.form.get('address_from'), request.form.get('addres_to'))
+                        bensin = res_dr['hits']['hits'][0]['_source']['fuelConsumption']*distance/100
+                        new_order = {
+                        'driver': full_name,
+                        'order': 1,
+                        'company_name': request.form.get('company_name'),
+                        'address_from': request.form.get('address_from'),
+                        'address_to': request.form.get('address_to'),
+                        'phone': request.form.get('phone'),
+                        'user_Id': user_id,
+                        'file': os.path.join(os.path.join(app.config['FILE_UPLOADS'], user_id+"_"+data_from_file.filename)),
+                        'price': round(get_price_normal(weigth_of_order, bensin, distance),2),
+                        'weight' : weigth_of_order,
+                        # 'order': dict_order,
+                        'place11': place11,
+                        'place12': place12,
+                        'place21': place21,
+                        'place22': place22
                         }
-                    }
-                    }
-            print(query_driver)
-            res_dr = es.search(index="drivers", body=query_driver)
-            bensin = res_dr['hits']['hits'][0]['_source']['fuelConsumption']*distance/100
-            if flag:
-                if min_dist[1] == number_values:
-                    new_order = {
-                    'driver': full_name,
-                    'order': number_values+1,
-                    'company_name': request.form.get('company_name'),
-                    'address_from': request.form.get('addres_from'),
-                    'address_to': request.form.get('address_to'),
-                    'phone': request.form.get('phone'),
-                    'user_Id': user_id,
-                    'file': os.path.join(os.path.join(app.config['FILE_UPLOADS'], user_id+"_"+data_from_file.filename)),
-                    'price': round(get_price_normal(weigth_of_order, bensin, distance), 2),
-                    'weight' : weigth_of_order,
-                    'place11': place11,
-                    'place12': place12,
-                    'place21': place21,
-                    'place22': place22
-                    }
-                    res1 = es.index(index='delivery_'+min_dist[2], body=new_order, request_timeout=30)
+                        result = es.index(index='delivery_'+driver, body=new_order, request_timeout=30)
+                        break
+            else:
+                for i in range(len(full_driver)):
+                    ran = full_driver[i].find(min_dist[2][1:])
+                    if ran != -1:
+                        full_name = full_driver[i]
+                print(full_name)
+                query_driver ={
+                        "query": {
+                            "match": {
+                                "userName": full_name
+                            }
+                        }
+                        }
+                print(query_driver)
+                res_dr = es.search(index="drivers", body=query_driver)
+                bensin = res_dr['hits']['hits'][0]['_source']['fuelConsumption']*distance/100
+                if flag:
+                    if min_dist[1] == number_values:
+                        new_order = {
+                        'driver': full_name,
+                        'order': number_values+1,
+                        'company_name': request.form.get('company_name'),
+                        'address_from': request.form.get('address_from'),
+                        'address_to': request.form.get('address_to'),
+                        'phone': request.form.get('phone'),
+                        'user_Id': user_id,
+                        'file': os.path.join(os.path.join(app.config['FILE_UPLOADS'], user_id+"_"+data_from_file.filename)),
+                        'price': round(get_price_normal(weigth_of_order, bensin, distance), 2),
+                        'weight' : weigth_of_order,
+                        'place11': place11,
+                        'place12': place12,
+                        'place21': place21,
+                        'place22': place22
+                        }
+                        res1 = es.index(index='delivery_'+min_dist[2], body=new_order, request_timeout=30)
+                    else:
+                        new_order = {
+                        'driver': full_name,
+                        'order': min_dist[1],
+                        'company_name': request.form.get('company_name'),
+                        'address_from': request.form.get('address_from'),
+                        'address_to': request.form.get('address_to'),
+                        'phone': request.form.get('phone'),
+                        'user_Id': user_id,
+                        'file': os.path.join(os.path.join(app.config['FILE_UPLOADS'], user_id+"_"+data_from_file.filename)),
+                        'price': round(get_price_normal(weigth_of_order, bensin, distance), 2),
+                        'weight' : weigth_of_order,
+                        'place11': place11,
+                        'place12': place12,
+                        'place21': place21,
+                        'place22': place22
+                        }
+                        res2 = es.index(index='delivery_'+min_dist[2], body=new_order, request_timeout=30)
+                        for i in range(number_values-min_dist[1]+1):
+                            sep_users = dict()
+                            sep_users['order'] = min_dist[1]+i+1
+                            
+                            update_body = dict()
+                            update_body["doc"] = dict()
+                            for item in sep_users.keys():
+                                update_body["doc"][item] = sep_users[item]            
+                            print(update_body)
+                            query_body = {
+                            "query": {
+                                "match": {
+                                    "order": min_dist[1]+i
+                                }
+                            }
+                            }
+                            print(query_body)
+                            res = es.search(index='delivery_'+min_dist[2], body=query_body)
+                            print(res)
+                            _id = res['hits']['hits'][0]["_id"]
+                            es.update(
+                                index='delivery_'+min_dist[2], id=_id, body=update_body, request_timeout=200)
                 else:
                     new_order = {
-                    'driver': full_name,
-                    'order': min_dist[1],
-                    'company_name': request.form.get('company_name'),
-                    'address_from': request.form.get('addres_from'),
-                    'address_to': request.form.get('address_to'),
-                    'phone': request.form.get('phone'),
-                    'user_Id': user_id,
-                    'file': os.path.join(os.path.join(app.config['FILE_UPLOADS'], user_id+"_"+data_from_file.filename)),
-                    'price': round(get_price_normal(weigth_of_order, bensin, distance), 2),
-                    'weight' : weigth_of_order,
-                    'place11': place11,
-                    'place12': place12,
-                    'place21': place21,
-                    'place22': place22
-                    }
+                        'driver': full_name,
+                        'order': min_dist[1],
+                        'company_name': request.form.get('company_name'),
+                        'address_from': request.form.get('address_from'),
+                        'address_to': request.form.get('address_to'),
+                        'phone': request.form.get('phone'),
+                        'user_Id': user_id,
+                        'file': os.path.join(os.path.join(app.config['FILE_UPLOADS'], user_id+"_"+data_from_file.filename)),
+                        'price': round(get_price_normal(weigth_of_order, bensin, distance), 2),
+                        'weight' : weigth_of_order,
+                        'place11': place11,
+                        'place12': place12,
+                        'place21': place21,
+                        'place22': place22
+                        }
                     res2 = es.index(index='delivery_'+min_dist[2], body=new_order, request_timeout=30)
-                    for i in range(number_values-min_dist[1]+1):
+                    for i in range(number_values-min_dist[1]):
                         sep_users = dict()
                         sep_users['order'] = min_dist[1]+i+1
                         
@@ -772,124 +865,126 @@ def add_normorder(user_id):
                             update_body["doc"][item] = sep_users[item]            
                         print(update_body)
                         query_body = {
-                        "query": {
-                            "match": {
-                                "order": min_dist[1]+i
+                            "query": {
+                                "match": {
+                                    "order": min_dist[1]+i
+                                }
                             }
-                        }
-                        }
+                            }
                         res = es.search(index='delivery_'+min_dist[2], body=query_body)
                         _id = res['hits']['hits'][0]["_id"]
                         es.update(
-                            index='delivery_'+min_dist[2], id=_id, body=update_body, request_timeout=200)
-            else:
-                new_order = {
-                    'driver': full_name,
-                    'order': min_dist[1],
-                    'company_name': request.form.get('company_name'),
-                    'address_from': request.form.get('addres_from'),
-                    'address_to': request.form.get('address_to'),
-                    'phone': request.form.get('phone'),
-                    'user_Id': user_id,
-                    'file': os.path.join(os.path.join(app.config['FILE_UPLOADS'], user_id+"_"+data_from_file.filename)),
-                    'price': round(get_price_normal(weigth_of_order, bensin, distance), 2),
-                    'weight' : weigth_of_order,
-                    'place11': place11,
-                    'place12': place12,
-                    'place21': place21,
-                    'place22': place22
-                    }
-                res2 = es.index(index='delivery_'+min_dist[2], body=new_order, request_timeout=30)
-                for i in range(number_values-min_dist[1]):
-                    sep_users = dict()
-                    sep_users['order'] = min_dist[1]+i+1
-                    
-                    update_body = dict()
-                    update_body["doc"] = dict()
-                    for item in sep_users.keys():
-                        update_body["doc"][item] = sep_users[item]            
-                    print(update_body)
-                    query_body = {
-                        "query": {
-                            "match": {
-                                "order": min_dist[1]+i
+                                index='delivery_'+min_dist[2], id=_id, body=update_body, request_timeout=200)
+                if number_values == 5:
+                    #add records to table orders and delete from delivery
+                    now = datetime.datetime.now()
+                    flag = True
+                    delivery = []
+                    count = 0
+                    fmt = '%Y-%m-%d %H:%M'
+                    while flag:
+                        count = count + 1
+                        next_day = now + timedelta(days = count)
+                        query = { "query": {
+                                    "match": {
+                                        "userName": full_name
+                                    }
+                                }
+                                }
+                        res_user = es.search(index="timetable", body=query)
+                        weekdays = res_user['hits']['hits'][0]['_source']['weekdays']
+                        if weekdays.find(next_day.strftime('%A')) == -1:
+                            #check which day is suitable (i.e count full time and choose day when driver has so free time)
+                            query_body = {
+                            "query": {
+                                "match": {
+                                    "driver": full_name
+                                }
                             }
-                        }
-                        }
-                    res = es.search(index='delivery_'+min_dist[2], body=query_body)
-                    _id = res['hits']['hits'][0]["_id"]
-                    es.update(
-                            index='delivery_'+min_dist[2], id=_id, body=update_body, request_timeout=200)
-            if number_values+1 == 5:
-                #add records to table orders and delete from delivery
-                now = datetime.datetime.now()
-                flag = True
-                delivery = []
-                count = 0
-                fmt = '%Y-%m-%d %H:%M:%S'
-                while flag:
-                    count = count + 1
-                    next_day = now + timedelta(days = count)
-                    query = { "query": {
+                            }
+                            query_timetable = {
+                            "query": {
                                 "match": {
                                     "userName": full_name
                                 }
                             }
                             }
-                    res_user = es.search(index="timetable", body=query)
-                    weekdays = res_user['hits']['hits'][0]['_source']['weekdays']
-                    if weekdays.find(next_day.strftime('%A')) == -1:
-                        #check which day is suitable (i.e count full time and choose day when driver has so free time)
-                        query_body = {
-                        "query": {
-                            "match": {
-                                "driver": full_name
-                            }
-                        }
-                        }
-                        res_user = es.search(index="orders", body=query_body)
-                        user = {}
-                        number_values = res_user.json()["hits"]["total"]["value"]
-                        ords_compare = []
-                        if len(res_user.json()["hits"]["hits"]):
-                            for i in range(number_values):
-                                user = res_user.json()["hits"]["hits"][i]['_source']
-                                if str(datetime.strptime(user['time_to'], '%d/%m/%y')) == str(datetime.strptime(str(next_day), '%d/%m/%y')):
-                                    ords_compare.append(user)
-                        for i in range(len(ords_compare)):
-                            if i != len(ords_compare):
-                                if (datetime.strptime(ords_compare[i+1]['time_from'],fmt) - datetime.strptime(ords_compare[i+1]['time_to'],fmt)).seconds/60 >= get_full_time('delivery_'+min_dist[2]):
-                                    #add to table and delete from delivery
-                                    for j in range(5):
-                                        query_body = {
-                                        "query": {
-                                                "match": {
-                                                    "order": j+1
-                                                }
-                                            }
-                                            }
-                                        res_user = es.search(index="delivery"+min_dist[2], body=query_body)
-                                        start_time = get_new_time(datetime.strptime(ords_compare[i+1]['time_to']), ords_compare[i+1]['address_to'], res_user['hits']['hits'][0]['_source']['address_from']) 
-                                        if j==0:
-                                            res_user['hits']['hits'][0]['_source']['time_from'] = start_time
-                                            res_user['hits']['hits'][0]['_source']['time_to'] = get_new_time(start_time,res_user['hits']['hits'][0]['_source']['address_from'], res_user['hits']['hits'][0]['_source']['address_to'])
-                                            old_address = res_user['hits']['hits'][0]['_source']['address_to']
-                                            start_time = res_user['hits']['hits'][0]['_source']['time_to']
-                                            result = es.index(index='orders', body=res_user, request_timeout=30)
-                                        else:
-                                            res_user['hits']['hits'][0]['_source']['time_from'] = get_new_time(start_time, old_address, res_user['hits']['hits'][0]['_source']['address_from'])
-                                            res_user['hits']['hits'][0]['_source']['time_to'] = get_new_time(start_time,res_user['hits']['hits'][0]['_source']['address_from'], res_user['hits']['hits'][0]['_source']['address_to'])
-                                            old_address = res_user['hits']['hits'][0]['_source']['address_to']
-                                            start_time = res_user['hits']['hits'][0]['_source']['time_to']
-                                            result = es.index(index='orders', body=res_user, request_timeout=30)
-                                        es.indices.delete(index="delivery"+min_dist[2], ignore=[400, 404])
+                            res_user = es.search(index="orders", body=query_body)
+                            timetable = es.search(index="timetable", body=query_timetable)['hits']['hits'][0]['_source']['timeBegin']
+                            user = {}
+                            number_values = res_user["hits"]["total"]["value"]
+                            ords_compare = []
+                            if len(res_user["hits"]["hits"]):
+                                for i in range(number_values):
+                                    user = res_user["hits"]["hits"][i]['_source']
+                                    if str(datetime.datetime.strptime(str(user['time_to']), '%d/%m/%Y %H:%M'))[0:10] == str(datetime.datetime.strptime(str(next_day), '%Y-%m-%d %H:%M:%S.%f'))[0:10]:
+                                            ords_compare.append(user)
+                            if len(ords_compare) == 0:
+                                timestr = str(datetime.datetime.strptime(user['time_to'], '%d/%m/%Y %H:%M'))[0:10] + " " +  str(get_time(int(timetable)))
+                                begin = datetime.datetime.strptime(timestr, '%Y-%m-%d %H:%M')
+                                for j in range(3, 5):
+                                    print(j)
+                                    print("hello")
+                                    query_body = {
+                                    "query": {
+                                                        "match": {
+                                                            "order": j+1
+                                                        }
+                                                    }
+                                                    }
+                                    res_user = es.search(index="delivery_"+min_dist[2], body=query_body)
+                                    start_time = begin 
+                                    if j==0:
+                                        res_user['hits']['hits'][0]['_source']['time_from'] = start_time
+                                        res_user['hits']['hits'][0]['_source']['time_to'] = get_new_time(start_time,res_user['hits']['hits'][0]['_source']['address_from'], res_user['hits']['hits'][0]['_source']['address_to'])
+                                        old_address = res_user['hits']['hits'][0]['_source']['address_to']
+                                        tart_time = res_user['hits']['hits'][0]['_source']['time_to']
+                                        result = es.index(index='orders', body=res_user['hits']['hits'][0]['_source'], request_timeout=30)
+                                    else:
+                                        res_user['hits']['hits'][0]['_source']['time_from'] = get_new_time(start_time, old_address, res_user['hits']['hits'][0]['_source']['address_from'])
+                                        res_user['hits']['hits'][0]['_source']['time_to'] = get_new_time(start_time,res_user['hits']['hits'][0]['_source']['address_from'], res_user['hits']['hits'][0]['_source']['address_to'])
+                                        old_address = res_user['hits']['hits'][0]['_source']['address_to']
+                                        start_time = res_user['hits']['hits'][0]['_source']['time_to']
+                                        result = es.index(index='orders', body=res_user['hits']['hits'][0]['_source'], request_timeout=30)
+                                es.indices.delete(index="delivery_"+min_dist[2], ignore=[400, 404])
+                                break
+                            else:
+                                for i in range(len(ords_compare)):
+                                    if i != len(ords_compare):
+                                        if (datetime.datetime.strptime(ords_compare[i+1]['time_from'],fmt) - datetime.datetime.strptime(ords_compare[i+1]['time_to'],fmt)).seconds/60 >= get_full_time('delivery_'+min_dist[2]):
+                                            #add to table and delete from delivery
+                                            for j in range(5):
+                                                query_body = {
+                                                "query": {
+                                                        "match": {
+                                                            "order": j+1
+                                                        }
+                                                    }
+                                                    }
+                                                res_user = es.search(index="delivery_"+min_dist[2], body=query_body)
+                                                begin = datetime.datetime.strptime(ords_compare[i+1]['time_to'])
+                                                start_time = get_new_time(begin, ords_compare[i+1]['address_to'], res_user['hits']['hits'][0]['_source']['address_from']) 
+                                                if j==0:
+                                                    res_user['hits']['hits'][0]['_source']['time_from'] = start_time
+                                                    res_user['hits']['hits'][0]['_source']['time_to'] = get_new_time(start_time,res_user['hits']['hits'][0]['_source']['address_from'], res_user['hits']['hits'][0]['_source']['address_to'])
+                                                    old_address = res_user['hits']['hits'][0]['_source']['address_to']
+                                                    start_time = res_user['hits']['hits'][0]['_source']['time_to']
+                                                    result = es.index(index='orders', body=res_user['hits']['hits'][0]['_source'], request_timeout=30)
+                                                else:
+                                                    res_user['hits']['hits'][0]['_source']['time_from'] = get_new_time(start_time, old_address, res_user['hits']['hits'][0]['_source']['address_from'])
+                                                    res_user['hits']['hits'][0]['_source']['time_to'] = get_new_time(start_time,res_user['hits']['hits'][0]['_source']['address_from'], res_user['hits']['hits'][0]['_source']['address_to'])
+                                                    old_address = res_user['hits']['hits'][0]['_source']['address_to']
+                                                    start_time = res_user['hits']['hits'][0]['_source']['time_to']
+                                                    result = es.index(index='orders', body=res_user['hits']['hits'][0]['_source'], request_timeout=30)
+                                            es.indices.delete(index="delivery_"+min_dist[2], ignore=[400, 404])
+                                            # break
+                                        break
                                     break
                                 break
-                            break
         return jsonify({'user_id': 1}), 201
-    except ValueError:
-        print("val")
-        return jsonify({'user_id': 1}), 204
+    # except ValueError:
+    #     print("val")
+    #     return jsonify({'user_id': 1}), 204
     except AttributeError:
         print("atr")
         return jsonify({'user_id': 1}), 204
@@ -902,7 +997,7 @@ def send_order(user_id):
     orders_obj = {
             "user_id" : request.form.get('user_Id'),
             'company_name': request.form.get('company_name'),
-            'addres_from': request.form.get('addres_from'),
+            'address_from': request.form.get('address_from'),
             'time_from': request.form.get('time_from'), 
             'address_to': request.form.get('address_to'),
             'phone': request.form.get('phone'),
@@ -1126,7 +1221,7 @@ def get_new_time(oldtime, from_, to_):
     shirota2 = location.longitude
     plac1 = (dolgota1, shirota1)
     plac2 = (dolgota2, shirota2)
-    return datetime.strptime(oldtime, '%d/%m/%Y %H:%M') + timedelta(minutes=get_dist(plac1[0], plac1[1], plac2[0], plac2[1])/60)
+    return oldtime + timedelta(minutes=get_dist(plac1[0], plac1[1], plac2[0], plac2[1])/60)
 
 
 def convert_coords(address):

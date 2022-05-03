@@ -35,6 +35,7 @@ const HomePageCustomer = () => {
   const navigate = useNavigate();
   const [filter, setFilter] = useState("");
   const [currItems, setCurrItems] = useState([]);
+  const [currDel, setCurrDel] = useState([]);
   const [projectsTab, setProjectsTab] = useState("1");
 
   const handleProjectsTabIndexChange = (e, newValue) => {
@@ -62,6 +63,17 @@ const HomePageCustomer = () => {
       
   }
 };
+
+
+useEffect(() => {
+  async function fetchProjects() {
+    let response = await api.get(`/deliv/${userId}`);
+    response = await response.data.delivery;
+    setCurrDel(response);
+  }
+  fetchProjects();
+}, [userId, navigate]);
+
 
   useEffect(() => {
     async function fetchProjects() {
@@ -121,10 +133,18 @@ const HomePageCustomer = () => {
                   <Tab
                     label={
                       <span style={{ fontSize: 14, textTransform: "none" }}>
-                        All
+                        Orders
                       </span>
                     }
                     value="1"
+                  />
+                    <Tab
+                    label={
+                      <span style={{ fontSize: 14, textTransform: "none" }}>
+                        Delivery
+                      </span>
+                    }
+                    value="2"
                   />
                 </TabList>
 
@@ -187,7 +207,7 @@ const HomePageCustomer = () => {
                           <TableCell align="left">
                             <MuiLink underline="hover" color="text.primary">
                               <Typography fontSize={14}>
-                                {item.addres_from}
+                                {item.address_from}
                               </Typography>
                             </MuiLink>
                           </TableCell>
@@ -239,7 +259,95 @@ const HomePageCustomer = () => {
                   </Table>
                 </TableContainer>
               </TabPanel>
-              <TabPanel value="2"></TabPanel>
+              <TabPanel value="2">
+              <TableContainer>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell align="left">
+                          <AppsIcon sx={{ ml: 1, mt: 1 }} />
+                        </TableCell>
+                        <TableCell align="left">Company name</TableCell>
+                        <TableCell align="left">Order</TableCell>
+                        <TableCell align="left">Address from&nbsp;</TableCell>
+                        <TableCell align="left">Address to&nbsp;</TableCell>
+                        <TableCell align="left">Phone</TableCell>
+                        <TableCell align="left">Price</TableCell>
+                        <TableCell align="left">Weight</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {currDel.map((item, index) => (
+                        <TableRow
+                          key={item.price}
+                          sx={{
+                            "&:last-child td, &:last-child th": { border: 0 },
+                          }}
+                        >
+                          <TableCell
+                            component="th"
+                            scope="row"
+                            align="left"
+                            width="70"
+                          >
+                           
+                          </TableCell>
+                          <TableCell align="left">
+                            <MuiLink underline="hover" color="text.primary">
+                              <Typography fontSize={14}>
+                                {item.company_name}
+                              </Typography>
+                            </MuiLink>
+                          </TableCell>
+                          <TableCell align="left">
+                            <MuiLink underline="hover" color="text.primary">
+                              <Typography fontSize={14}>
+                                {item.order}
+                              </Typography>
+                            </MuiLink>
+                          </TableCell>
+                          <TableCell align="left">
+                            <MuiLink underline="hover" color="text.primary">
+                              <Typography fontSize={14}>
+                                {item.address_from}
+                              </Typography>
+                            </MuiLink>
+                          </TableCell>
+                          <TableCell align="left">
+                            <MuiLink underline="hover" color="text.primary">
+                              <Typography fontSize={14}>
+                                {item.address_to}
+                              </Typography>
+                            </MuiLink>
+                          </TableCell>
+                          <TableCell align="left">
+                            <MuiLink underline="hover" color="text.primary">
+                              <Typography fontSize={14}>
+                                {item.phone}
+                              </Typography>
+                            </MuiLink>
+                          </TableCell>
+                          <TableCell align="left">
+                            <MuiLink underline="hover" color="text.primary">
+                              <Typography fontSize={14}>
+                                {item.price}
+                              </Typography>
+                            </MuiLink>
+                          </TableCell>
+                          <TableCell align="left">
+                            <MuiLink underline="hover" color="text.primary">
+                              <Typography fontSize={14}>
+                                {item.weight}
+                              </Typography>
+                            </MuiLink>
+                          </TableCell>
+                         
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </TabPanel>
             </TabContext>
           </Container>
         </Container>
