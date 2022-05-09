@@ -935,14 +935,14 @@ def add_normorder(user_id):
                                     res_user = es.search(index="delivery_"+min_dist[2], body=query_body)
                                     start_time = begin 
                                     if j==0:
-                                        res_user['hits']['hits'][0]['_source']['time_from'] = start_time
-                                        res_user['hits']['hits'][0]['_source']['time_to'] = get_new_time(start_time,res_user['hits']['hits'][0]['_source']['address_from'], res_user['hits']['hits'][0]['_source']['address_to'])
+                                        res_user['hits']['hits'][0]['_source']['time_from'] = start_time.strftime('%m/%d/%y %H:%M')
+                                        res_user['hits']['hits'][0]['_source']['time_to'] = get_new_time(start_time,res_user['hits']['hits'][0]['_source']['address_from'], res_user['hits']['hits'][0]['_source']['address_to']).strftime('%m/%d/%y %H:%M')
                                         old_address = res_user['hits']['hits'][0]['_source']['address_to']
                                         tart_time = res_user['hits']['hits'][0]['_source']['time_to']
                                         result = es.index(index='orders', body=res_user['hits']['hits'][0]['_source'], request_timeout=30)
                                     else:
-                                        res_user['hits']['hits'][0]['_source']['time_from'] = get_new_time(start_time, old_address, res_user['hits']['hits'][0]['_source']['address_from'])
-                                        res_user['hits']['hits'][0]['_source']['time_to'] = get_new_time(start_time,res_user['hits']['hits'][0]['_source']['address_from'], res_user['hits']['hits'][0]['_source']['address_to'])
+                                        res_user['hits']['hits'][0]['_source']['time_from'] = get_new_time(start_time, old_address, res_user['hits']['hits'][0]['_source']['address_from']).strftime('%m/%d/%y %H:%M')
+                                        res_user['hits']['hits'][0]['_source']['time_to'] = get_new_time(start_time,res_user['hits']['hits'][0]['_source']['address_from'], res_user['hits']['hits'][0]['_source']['address_to']).strftime('%m/%d/%y %H:%M')
                                         old_address = res_user['hits']['hits'][0]['_source']['address_to']
                                         start_time = res_user['hits']['hits'][0]['_source']['time_to']
                                         result = es.index(index='orders', body=res_user['hits']['hits'][0]['_source'], request_timeout=30)

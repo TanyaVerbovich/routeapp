@@ -69,17 +69,6 @@ const HomePageDriver = () => {
 };
 
 
-  useEffect(() => {
-    async function fetchProjects() {
-      let usr = username.split(" ")[1].toLowerCase();
-      console.log( `/delivery/${usr}`);
-      let response = await api.get(`/delivery/${usr}`);
-      response = await response.data.delivery;
-      setCurrDel(response);
-    }
-    fetchProjects();
-  }, [usr, navigate]);
-
   
   useEffect(() => {
     async function fetchProjects() {
@@ -89,6 +78,19 @@ const HomePageDriver = () => {
     }
     fetchProjects();
   }, [userId, navigate]);
+
+  
+  useEffect(() => {
+    async function fetchProjects() {
+      console.log(username)
+      let usr = username.split(" ")[1].toLowerCase();
+      console.log( `/delivery/${usr}`);
+      let response = await api.get(`/delivery/${usr}`);
+      response = await response.data.delivery;
+      setCurrDel(response);
+    }
+    fetchProjects();
+  }, [usr, navigate]);
 
   return (
     <div>

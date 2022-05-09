@@ -35,6 +35,7 @@ const HomePageCustomer = () => {
   const navigate = useNavigate();
   const [filter, setFilter] = useState("");
   const [currItems, setCurrItems] = useState([]);
+  const [username, setUsername] = useState(null);
   const [currDel, setCurrDel] = useState([]);
   const [projectsTab, setProjectsTab] = useState("1");
 
@@ -44,6 +45,12 @@ const HomePageCustomer = () => {
 
   const handleFilt = (e) => {
     setFilter(e.target.value);
+  };
+
+  function getUserName() {
+    api.post(`/username/${userId}`).then((response) => {
+      setUsername(response.data['username'])
+    });
   };
 
   function handleCreation() {
@@ -105,9 +112,8 @@ useEffect(() => {
               marginTop="2em"
               marginBottom="1em"
             >
-              <Typography variant="h5" sx={{ ml: 1 }}>
-                Orders
-              </Typography>
+              {getUserName()}
+              {username && <Typography variant="h4" sx={{ ml: 1 }}>Hi, {username}!</Typography>}
               <Button
                 onClick={handleCreation}
                 variant="contained"
